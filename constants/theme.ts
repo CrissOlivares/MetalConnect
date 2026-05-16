@@ -1,53 +1,49 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
 
-import { Platform } from 'react-native';
+// ===== COLORES METALCONNECT =====
+export const ThemeColors = {
+  // Fondos
+  fondo: '#1a1a1a',
+  fondoCard: '#2a2a2a',
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+  // Colores principales
+  naranja: '#FF6B00',
+  azul: '#007AFF',
 
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
-  },
-};
+  // Textos
+  textoBlanco: '#FFFFFF',
+  textoGris: '#aaaaaa',
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+  // Bordes
+  borde: '#333333',
+}
+
+// ===== TIPOGRAFÍA =====
+export const FontSizes = {
+  titulo: 32,
+  subtitulo: 22,
+  texto: 16,
+  pequeño: 14,
+}
+
+export const FontWeights = {
+  bold: 'bold' as const,
+  normal: 'normal' as const,
+}
+
+// ===== ESPACIADO =====
+export const Spacing = {
+  xs: 8,
+  sm: 12,
+  md: 16,
+  lg: 24,
+  xl: 40,
+  xxl: 80,
+}
+
+// ===== BORDES =====
+export const Radius = {
+  sm: 8,
+  md: 16,
+  lg: 30,
+  full: 50,
+}
