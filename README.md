@@ -1,50 +1,44 @@
-# Welcome to your Expo app 👋
+# MetalConnect
+Es una app de Marketplace que conecta talleres metalúrgicos con clientes que necesitan servicios industriales, se separará en 2, Clientes y Talleres, el cliente puede buscar y pedir servicios dentro de la app, dichos talleres verán las ofertas y podrán cotizar el precio mediante la app, una vez finalizado la negociación, opcionalmente podrán continuar mediante Whatsapp.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Disponibilidad
+Actualmente a fecha 14-04-2026 se esta desarrollando para personas de Chile
+Diseñado para expedirse a toda Latinoamérica 
 
-## Get started
+## Tecnologías
+Base:
+- React Native
+- Expo
+- React Navigation
 
-1. Install dependencies
+Base de datos:
+- Supabase
 
-   ```bash
-   npm install
-   ```
+Funcionalidades específicas:
+- Expo Image Picker (fotos)
+- Expo Location (Obtener ubicación del usuario)
+- React Native Maps (Mostrar mapa)
+- Expo Notifications (Notificaciones push)
 
-2. Start the app
+## Como instalar el proyecto
 
-   ```bash
-   npx expo start
-   ```
+### Requisitos
+- Node.js instalado
+- Expo Go en el celular
 
-In the output, you'll find options to open the app in a
+### Pasos
+1.- Clonar el repositorio
+git clone https://github.com/CrissOlivares/MetalConnect.git
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+2.- Entrar a la carpeta
+cd MetalConnect
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+3.- Instalar dependencias
+npm Install
 
-## Get a fresh project
+4.- Correr la app
+npx expo start
 
-When you're ready, run:
+5.- Escanear el QR con Expo Go
 
-```bash
-npm run reset-project
-```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
