@@ -1,5 +1,5 @@
 # MetalConnect
-Es una app de Marketplace que conecta talleres metalúrgicos con clientes que necesitan servicios industriales, se separará en 2, Clientes y Talleres, el cliente puede buscar y pedir servicios dentro de la app, dichos talleres verán las ofertas y podrán cotizar el precio mediante la app, una vez finalizado la negociación, opcionalmente podrán continuar mediante Whatsapp.
+Es una app de Marketplace que conecta talleres metalúrgicos con clientes que necesitan servicios industriales
 
 ## Disponibilidad
 Actualmente a fecha 14-04-2026 se esta desarrollando para personas de Chile
