@@ -1,10 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { useAuth } from '../../hooks/useAuth';
 import { homeStyles } from '../../styles/homeStyles';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { user, loading } = useAuth()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace('/login')
+    }
+  }, [user, loading])
+
+  if (loading) return null 
 
   return (
     <View style={homeStyles.container}>
