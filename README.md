@@ -1,18 +1,21 @@
 # MetalConnect
-Es una app de Marketplace que conecta talleres metalúrgicos con clientes que necesitan servicios industriales
+Es una app de Marketplace que conecta talleres metalúrgicos e independientes con clientes y que necesitan servicios industriales
+
+## Estado del proyecto
+a fecha de hoy 21-05-2026 en desarrollo
 
 ## Disponibilidad
 Actualmente a fecha 14-04-2026 se esta desarrollando para personas de Chile
 Diseñado para expedirse a toda Latinoamérica 
 
 ## Tecnologías
-Base:
 - React Native
 - Expo
 - React Navigation
+- TypeScript
 
 Base de datos:
-- Supabase
+- Supabase (DB, Auth, Storage)
 
 Funcionalidades específicas:
 - Expo Image Picker (fotos)
@@ -36,9 +39,13 @@ cd MetalConnect
 3.- Instalar dependencias
 npm Install
 
-4.- Correr la app
+4.- IMPORTANTE CREAR VARIABLE DE ENTORNO de nombre .env en la raiz del proyecto
+EXPO_PUBLIC_SUPABASE_URL=https://auvdtuozebzruwmibuuu.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=aqui la key que te pase al wsp
+
+5.- Correr la app
 npx expo start
 
-5.- Escanear el QR con Expo Go
+6.- Escanear el QR con Expo Go
 
 
