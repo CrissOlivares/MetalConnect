@@ -12,7 +12,7 @@ export const useAuth = () => {
     let isCancelled = false
 
     // si tarda más de 30 segundos muestra error
-    const timer = window.setTimeout(() => {
+    const timer = setTimeout(() => {
         if (loading) setTimedOut(true)
       }, 30000)
     
@@ -44,5 +44,5 @@ export const useAuth = () => {
     setCancelled(true)
     setLoading(false)
   }
-  return { user, loading }
+  return { user, loading, timedOut, cancelled, cancel }
 }
