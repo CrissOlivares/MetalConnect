@@ -1,8 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { homeStyles } from '../../styles/homeStyles';
 
 export default function HomeScreen() {
+  const router = useRouter();
+
   return (
     <View style={homeStyles.container}>
 
@@ -18,7 +21,7 @@ export default function HomeScreen() {
       </Text>
 
       {/* Botones */}
-      <TouchableOpacity style={homeStyles.btnBusco}>
+      <TouchableOpacity style={homeStyles.btnBusco} onPress={() => router.push('/cliente')}>
         <Ionicons name="search" size={20} color="white" />
         <Text style={homeStyles.btnText}>Busco Servicio</Text>
       </TouchableOpacity>
@@ -26,6 +29,10 @@ export default function HomeScreen() {
       <TouchableOpacity style={homeStyles.btnTaller}>
         <Ionicons name="business" size={20} color="white" />
         <Text style={homeStyles.btnText}>Soy Taller</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => router.push('/login')}>
+        <Text style={homeStyles.linkLogin}>¿Ya tienes cuenta? Inicia sesión</Text>
       </TouchableOpacity>
 
       {/* Por qué MetalConnect */}
