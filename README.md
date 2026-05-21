@@ -78,7 +78,7 @@ npm install
 Crea un archivo `.env` en la raíz del proyecto:
 ```
 EXPO_PUBLIC_SUPABASE_URL=https://auvdtuozebzruwmibuuu.supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=key enviada al WSP
+EXPO_PUBLIC_SUPABASE_ANON_KEY=key enviada al WSP privado
 ```
 
 **5. Correr la app**
