@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-const supabaseUrl = 'https://auvdtuozebzruwmibuuu.supabase.co/rest/v1/' //url de DATA API
-const supabaseAnonKey = 'sb_publishable_1y4sxtunyE6Xk6cmyIVbeQ_V6Fp8O6R' //key anon de API KEY
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
