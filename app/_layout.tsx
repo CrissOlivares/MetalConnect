@@ -1,5 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
-import { Stack, useRouter } from 'expo-router'
+import { Stack, useRouter, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import 'react-native-reanimated'
@@ -15,19 +15,24 @@ export default function RootLayout() {
   const colorScheme = useColorScheme()
   const { user, loading } = useAuth()
   const router = useRouter()
+  const segments = useSegments()
 
   useEffect(() => {
     if (loading) return
-    if (!user) {
+    const pantallaActual = segments[0]
+    const esPantallaPublica = pantallaActual === 'login' || pantallaActual === 'registro'
+
+    if (!user && !esPantallaPublica) {
       router.replace('/login')
     }
-  }, [user, loading])
+  }, [user, loading, segments])
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="cliente" options={{ title: 'MetalConnect' }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="registro" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
