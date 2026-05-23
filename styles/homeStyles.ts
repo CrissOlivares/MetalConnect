@@ -85,4 +85,9 @@ export const homeStyles = StyleSheet.create({
     color: ThemeColors.textoGris,
     textAlign: 'center',
   },
+  linkLogin: {
+    fontSize: FontSizes.pequeño,
+    color: ThemeColors.textoGris,
+    marginTop: Spacing.sm,
+  },
 });
