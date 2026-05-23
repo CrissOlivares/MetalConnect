@@ -3,38 +3,13 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../constants/theme';
-import { signIn } from '../services/auth';
 import { loginStyles } from '../styles/loginStyles';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [correo, setCorreo] = useState('')
-  const [clave, setClave] = useState('')
-  const [claveVisible, setClaveVisible] = useState(false)
-  const [error, setError] = useState('')
-  const [cargando, setCargando] = useState(false)
-
-  const handleLogin = async () => {
-    if (!correo || !clave) {
-      setError('Por favor completa todos los campos')
-      return
-    }
-    setCargando(true)
-    setError('')
-    const { error } = await signIn(correo, clave)
-    if (error) {
-      if (error.message === 'Invalid login credentials') {
-        setError('Correo o contraseña incorrectos')
-      } else {
-        setError(error.message)
-      }
-    }
-    setCargando(false)
-  }
-
-  const handleOlvideContrasena = () => {
-    router.push('/forgot-password')
-  }
+  const [correo, setCorreo] = useState('');
+  const [clave, setClave] = useState('');
+  const [claveVisible, setClaveVisible] = useState(false);
 
   return (
     <KeyboardAvoidingView
@@ -89,27 +64,16 @@ export default function LoginScreen() {
           </View>
         </View>
 
-        {/* Error */}
-        {error ? (
-          <Text style={{ color: 'red', textAlign: 'center', marginTop: 8 }}>{error}</Text>
-        ) : null}
-
         {/* Olvidé contraseña */}
-        <TouchableOpacity style={loginStyles.olvideClave} onPress={handleOlvideContrasena}>
+        <TouchableOpacity style={loginStyles.olvideClave}>
           <Text style={loginStyles.olvideClaveTex}>¿Olvidaste tu contraseña?</Text>
         </TouchableOpacity>
 
       </View>
 
       {/* Botón login */}
-      <TouchableOpacity
-        style={loginStyles.btnLogin}
-        onPress={handleLogin}
-        disabled={cargando}
-      >
-        <Text style={loginStyles.btnLoginTexto}>
-          {cargando ? 'Ingresando...' : 'Iniciar Sesión'}
-        </Text>
+      <TouchableOpacity style={loginStyles.btnLogin}>
+        <Text style={loginStyles.btnLoginTexto}>Iniciar Sesión</Text>
       </TouchableOpacity>
 
       {/* Separador */}
@@ -122,7 +86,7 @@ export default function LoginScreen() {
       {/* Registro */}
       <View style={loginStyles.registroFila}>
         <Text style={loginStyles.registroTexto}>¿No tienes cuenta?</Text>
-        <TouchableOpacity onPress={() => router.push('/register')}>
+        <TouchableOpacity onPress={() => router.push('/registro')}>
           <Text style={loginStyles.registroEnlace}>Regístrate</Text>
         </TouchableOpacity>
       </View>
@@ -130,3 +94,4 @@ export default function LoginScreen() {
     </KeyboardAvoidingView>
   );
 }
+
