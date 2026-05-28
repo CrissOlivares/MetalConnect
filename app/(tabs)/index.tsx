@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
+import { signOut } from '../../services/auth';
 import { homeStyles } from '../../styles/homeStyles';
 
 export default function HomeScreen() {
@@ -15,7 +16,12 @@ export default function HomeScreen() {
     }
   }, [user, loading])
 
-  if (loading) return null 
+  if (loading) return null
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.replace('/login')
+  }
 
   return (
     <View style={homeStyles.container}>
@@ -42,10 +48,6 @@ export default function HomeScreen() {
         <Text style={homeStyles.btnText}>Soy Taller</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push('/login')}>
-        <Text style={homeStyles.linkLogin}>¿Ya tienes cuenta? Inicia sesión</Text>
-      </TouchableOpacity>
-
       {/* Por qué MetalConnect */}
       <Text style={homeStyles.porQueTitle}>¿Por qué MetalConnect?</Text>
 
@@ -58,6 +60,15 @@ export default function HomeScreen() {
           Publica tu trabajo y recibe múltiples presupuestos de talleres verificados
         </Text>
       </View>
+
+      {/* Cerrar sesión */}
+      <TouchableOpacity
+        onPress={handleSignOut}
+        style={{ marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 8 }}
+      >
+        <Ionicons name="log-out-outline" size={20} color="#FF6B00" />
+        <Text style={{ color: '#FF6B00', fontSize: 14 }}>Cerrar sesión</Text>
+      </TouchableOpacity>
 
     </View>
   );
