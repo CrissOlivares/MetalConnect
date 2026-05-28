@@ -21,9 +21,13 @@ export default function RootLayout() {
     if (loading) return
     const pantallaActual = segments[0]
     const esPantallaPublica = pantallaActual === 'login' || pantallaActual === 'registro'
-
+  
     if (!user && !esPantallaPublica) {
       router.replace('/login')
+    }
+  
+    if (user && esPantallaPublica) {
+      router.replace('/(tabs)')
     }
   }, [user, loading, segments])
   return (

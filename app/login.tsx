@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../constants/theme';
+import { signIn } from '../services/auth';
 import { loginStyles } from '../styles/loginStyles';
 
 export default function LoginScreen() {
@@ -10,13 +11,32 @@ export default function LoginScreen() {
   const [correo, setCorreo] = useState('');
   const [clave, setClave] = useState('');
   const [claveVisible, setClaveVisible] = useState(false);
+  const [error, setError] = useState('');
+  const [cargando, setCargando] = useState(false);
+
+  const handleLogin = async () => {
+    if (!correo || !clave) {
+      setError('Por favor completa todos los campos')
+      return
+    }
+    setCargando(true)
+    setError('')
+    const { data, error } = await signIn(correo, clave)
+    if (error) {
+      if (error.message === 'Invalid login credentials') {
+        setError('Correo o contraseña incorrectos')
+      } else {
+        setError(error.message)
+      }
+    }
+    setCargando(false)
+  }
 
   return (
     <KeyboardAvoidingView
       style={loginStyles.contenedor}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      {/* Logo y título */}
       <View style={loginStyles.logoContenedor}>
         <View style={loginStyles.iconoContenedor}>
           <Ionicons name="construct" size={40} color="white" />
@@ -25,10 +45,7 @@ export default function LoginScreen() {
         <Text style={loginStyles.subtitulo}>Bienvenido de vuelta</Text>
       </View>
 
-      {/* Formulario */}
       <View style={loginStyles.formulario}>
-
-        {/* Correo */}
         <View>
           <Text style={loginStyles.etiquetaCampo}>Correo electrónico</Text>
           <TextInput
@@ -42,7 +59,6 @@ export default function LoginScreen() {
           />
         </View>
 
-        {/* Contraseña */}
         <View>
           <Text style={loginStyles.etiquetaCampo}>Contraseña</Text>
           <View style={loginStyles.campoFila}>
@@ -64,34 +80,37 @@ export default function LoginScreen() {
           </View>
         </View>
 
-        {/* Olvidé contraseña */}
+        {error ? (
+          <Text style={{ color: 'red', textAlign: 'center', marginTop: 8 }}>{error}</Text>
+        ) : null}
+
         <TouchableOpacity style={loginStyles.olvideClave}>
           <Text style={loginStyles.olvideClaveTex}>¿Olvidaste tu contraseña?</Text>
         </TouchableOpacity>
-
       </View>
 
-      {/* Botón login */}
-      <TouchableOpacity style={loginStyles.btnLogin}>
-        <Text style={loginStyles.btnLoginTexto}>Iniciar Sesión</Text>
+      <TouchableOpacity
+        style={loginStyles.btnLogin}
+        onPress={handleLogin}
+        disabled={cargando}
+      >
+        <Text style={loginStyles.btnLoginTexto}>
+          {cargando ? 'Ingresando...' : 'Iniciar Sesión'}
+        </Text>
       </TouchableOpacity>
 
-      {/* Separador */}
       <View style={loginStyles.separador}>
         <View style={loginStyles.separadorLinea} />
         <Text style={loginStyles.separadorTexto}>o</Text>
         <View style={loginStyles.separadorLinea} />
       </View>
 
-      {/* Registro */}
       <View style={loginStyles.registroFila}>
         <Text style={loginStyles.registroTexto}>¿No tienes cuenta?</Text>
         <TouchableOpacity onPress={() => router.push('/registro')}>
           <Text style={loginStyles.registroEnlace}>Regístrate</Text>
         </TouchableOpacity>
       </View>
-
     </KeyboardAvoidingView>
   );
 }
-
