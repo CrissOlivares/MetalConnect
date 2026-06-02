@@ -37,6 +37,7 @@ export default function RootLayout() {
         <Stack.Screen name="cliente" options={{ title: 'MetalConnect' }} />
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="registro" options={{ headerShown: false }} />
+        <Stack.Screen name="taller" options={{ title: 'MetalConnect' }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
