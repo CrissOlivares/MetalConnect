@@ -43,7 +43,7 @@ export default function HomeScreen() {
         <Text style={homeStyles.btnText}>Busco Servicio</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={homeStyles.btnTaller}>
+      <TouchableOpacity style={homeStyles.btnTaller} onPress={() => router.push('/taller')}>
         <Ionicons name="business" size={20} color="white" />
         <Text style={homeStyles.btnText}>Soy Taller</Text>
       </TouchableOpacity>
