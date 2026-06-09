@@ -20,16 +20,20 @@ export default function RootLayout() {
   useEffect(() => {
     if (loading) return
     const pantallaActual = segments[0]
-    const esPantallaPublica = pantallaActual === 'login' || pantallaActual === 'registro'
-  
+    const esPantallaPublica = pantallaActual === 'login' || 
+                          pantallaActual === 'registro' ||
+                          pantallaActual === 'forgot-password' ||
+                          pantallaActual === 'reset-password'
+
     if (!user && !esPantallaPublica) {
       router.replace('/login')
     }
-  
+
     if (user && esPantallaPublica) {
       router.replace('/(tabs)')
     }
   }, [user, loading, segments])
+
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
@@ -38,6 +42,8 @@ export default function RootLayout() {
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="registro" options={{ headerShown: false }} />
         <Stack.Screen name="taller" options={{ title: 'MetalConnect' }} />
+        <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
+        <Stack.Screen name="reset-password" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
