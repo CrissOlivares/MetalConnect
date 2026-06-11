@@ -15,6 +15,9 @@ export const ThemeColors = {
 
   // Bordes
   borde: '#333333',
+
+  // Estados
+  verde: '#4caf50',
 }
 
 // ===== TIPOGRAFÍA =====
