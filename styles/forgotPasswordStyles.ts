@@ -90,4 +90,37 @@ export const forgotPasswordStyles = StyleSheet.create({
     color: ThemeColors.naranja,
     fontWeight: FontWeights.bold,
   },
+  btnDeshabilitado: {
+    opacity: 0.6,
+  },
+  campoIcono: {
+    marginRight: Spacing.xs,
+  },
+  errorFila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  errorTexto: {
+    color: '#ff4444',
+    fontSize: FontSizes.pequeño,
+  },
+  btnVolver: {
+    position: 'absolute',
+    top: 56,
+    left: Spacing.md,
+    padding: Spacing.xs,
+  },
+  correoDestacado: {
+    color: ThemeColors.naranja,
+    fontWeight: FontWeights.bold,
+  },
+  btnSecundario: {
+    paddingVertical: Spacing.sm,
+    alignItems: 'center',
+  },
+  btnSecundarioTexto: {
+    color: ThemeColors.textoGris,
+    fontSize: FontSizes.pequeño,
+  },
 });

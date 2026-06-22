@@ -84,7 +84,7 @@ export default function LoginScreen() {
           <Text style={{ color: 'red', textAlign: 'center', marginTop: 8 }}>{error}</Text>
         ) : null}
 
-        <TouchableOpacity style={loginStyles.olvideClave}>
+        <TouchableOpacity style={loginStyles.olvideClave} onPress={() => router.push('/forgot-password')}>
           <Text style={loginStyles.olvideClaveTex}>¿Olvidaste tu contraseña?</Text>
         </TouchableOpacity>
       </View>
