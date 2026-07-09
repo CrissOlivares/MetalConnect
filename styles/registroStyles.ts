@@ -9,11 +9,11 @@ export const registroStyles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  logoContenedor: {
+  logoContainer: {
     alignItems: 'center',
     marginBottom: Spacing.xl,
   },
-  iconoContenedor: {
+  iconoContainer: {
     backgroundColor: ThemeColors.naranja,
     padding: Spacing.md,
     borderRadius: Radius.md,
@@ -90,6 +90,38 @@ export const registroStyles = StyleSheet.create({
   loginEnlace: {
     fontSize: FontSizes.pequeño,
     color: ThemeColors.naranja,
+    fontWeight: FontWeights.bold,
+  },
+    separador: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  separadorLinea: {
+    flex: 1,
+    height: 1,
+    backgroundColor: ThemeColors.borde,
+  },
+  separadorTexto: {
+    fontSize: FontSizes.pequeño,
+    color: ThemeColors.textoGris,
+  },
+  btnGoogle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    backgroundColor: ThemeColors.fondoCard,
+    borderWidth: 1,
+    borderColor: ThemeColors.borde,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.sm,
+    marginBottom: Spacing.lg,
+  },
+  btnGoogleTexto: {
+    color: ThemeColors.textoBlanco,
+    fontSize: FontSizes.texto,
     fontWeight: FontWeights.bold,
   },
 });
