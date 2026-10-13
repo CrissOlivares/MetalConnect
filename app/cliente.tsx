@@ -1,37 +1,34 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { clienteStyles } from '../styles/clienteStyles';
 import { ThemeColors } from '../constants/theme';
-
-const trabajos = [
-  {
-    id: '1',
-    titulo: 'Fabricar portón de 3 metros',
-    categoria: 'Carpintería Metálica',
-    ubicacion: 'Las Condes, Santiago',
-    descripcion:
-      'Necesito un portón corredizo de acero de 3 metros de ancho por 2.5 de alto. Incluir motor eléctrico.',
-    fecha: '17-05-2026',
-    ofertas: 2,
-    estado: 'Abierto',
-  },
-  {
-    id: '2',
-    titulo: 'Reparar eje de transmisión',
-    categoria: 'Torno/Fresado',
-    ubicacion: 'Maipú, Santiago',
-    descripcion: 'Eje de camión doblado. Necesita enderezado y soldadura.',
-    fecha: '18-05-2026',
-    ofertas: 1,
-    estado: 'Abierto',
-  },
-];
+import { useAuth } from '../hooks/useAuth';
+import { obtenerMisTrabajos, Trabajo } from '../services/trabajos';
 
 export default function ClienteScreen() {
+  const router = useRouter();
+  const { user } = useAuth();
   const [tabActiva, setTabActiva] = useState<'trabajos' | 'ofertas'>('trabajos');
+  const [trabajos, setTrabajos] = useState<Trabajo[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState('');
+
+  // Recarga la lista cada vez que se vuelve a esta pantalla (ej: después de publicar)
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) return;
+      obtenerMisTrabajos(user.id).then(({ data, error }) => {
+        if (error) setError(error.message);
+        else setTrabajos(data);
+        setCargando(false);
+      });
+    }, [user])
+  );
 
   const totalOfertas = trabajos.reduce((acc, t) => acc + t.ofertas, 0);
+  const conRespuesta = trabajos.filter((t) => t.ofertas > 0).length;
 
   return (
     <ScrollView style={clienteStyles.contenedor} showsVerticalScrollIndicator={false}>
@@ -45,21 +42,21 @@ export default function ClienteScreen() {
       {/* Estadísticas */}
       <View style={clienteStyles.filaEstadisticas}>
         <View style={clienteStyles.tarjetaEstadistica}>
-          <Text style={[clienteStyles.estadisticaNumero, { color: ThemeColors.naranja }]}>2</Text>
+          <Text style={[clienteStyles.estadisticaNumero, { color: ThemeColors.naranja }]}>{trabajos.length}</Text>
           <Text style={clienteStyles.estadisticaEtiqueta}>Trabajos Publicados</Text>
         </View>
         <View style={clienteStyles.tarjetaEstadistica}>
-          <Text style={[clienteStyles.estadisticaNumero, { color: ThemeColors.azul }]}>3</Text>
+          <Text style={[clienteStyles.estadisticaNumero, { color: ThemeColors.azul }]}>{totalOfertas}</Text>
           <Text style={clienteStyles.estadisticaEtiqueta}>Ofertas Recibidas</Text>
         </View>
         <View style={clienteStyles.tarjetaEstadistica}>
-          <Text style={[clienteStyles.estadisticaNumero, { color: ThemeColors.textoBlanco }]}>2</Text>
+          <Text style={[clienteStyles.estadisticaNumero, { color: ThemeColors.textoBlanco }]}>{conRespuesta}</Text>
           <Text style={clienteStyles.estadisticaEtiqueta}>Con Respuesta</Text>
         </View>
       </View>
 
       {/* Botón publicar */}
-      <TouchableOpacity style={clienteStyles.btnPublicar}>
+      <TouchableOpacity style={clienteStyles.btnPublicar} onPress={() => router.push('/publicar-trabajo')}>
         <Ionicons name="add" size={20} color="white" />
         <Text style={clienteStyles.btnPublicarTexto}>Publicar Nuevo Trabajo</Text>
       </TouchableOpacity>
@@ -96,6 +93,11 @@ export default function ClienteScreen() {
       </View>
 
       {/* Lista de trabajos */}
+      {cargando && <ActivityIndicator color={ThemeColors.naranja} />}
+      {error ? <Text style={clienteStyles.textoMensaje}>Error al cargar: {error}</Text> : null}
+      {!cargando && !error && trabajos.length === 0 && (
+        <Text style={clienteStyles.textoMensaje}>Aún no has publicado trabajos</Text>
+      )}
       {trabajos.map((trabajo) => (
         <TouchableOpacity key={trabajo.id} style={clienteStyles.tarjetaTrabajo}>
           <View style={clienteStyles.trabajoCabecera}>
@@ -112,7 +114,9 @@ export default function ClienteScreen() {
           <Text style={clienteStyles.trabajoDescripcion}>{trabajo.descripcion}</Text>
 
           <View style={clienteStyles.trabajoPie}>
-            <Text style={clienteStyles.trabajoFecha}>{trabajo.fecha}</Text>
+            <Text style={clienteStyles.trabajoFecha}>
+              {new Date(trabajo.created_at).toLocaleDateString('es-CL')}
+            </Text>
             <View style={clienteStyles.filaOfertas}>
               <Ionicons name="chatbubble-outline" size={14} color={ThemeColors.naranja} />
               <Text style={clienteStyles.ofertasTexto}>

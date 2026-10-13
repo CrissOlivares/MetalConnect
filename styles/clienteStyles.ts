@@ -160,4 +160,12 @@ export const clienteStyles = StyleSheet.create({
     color: ThemeColors.naranja,
     fontWeight: FontWeights.bold,
   },
+
+  // Mensajes (cargando, vacío, error)
+  textoMensaje: {
+    fontSize: FontSizes.pequeño,
+    color: ThemeColors.textoGris,
+    textAlign: 'center',
+    marginVertical: Spacing.lg,
+  },
 });

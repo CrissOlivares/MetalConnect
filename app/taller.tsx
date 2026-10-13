@@ -1,24 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { especialidades } from '../constants/especialidades';
 import { ThemeColors } from '../constants/theme';
+import { registrarTaller } from '../services/talleres';
 import { tallerStyles } from '../styles/tallerStyles';
 
-const especialidades = [
-  'Soldadura MIG/TIG',
-  'Carpintería Metálica',
-  'Torno/Fresado',
-  'Corte Láser',
-  'Plegado',
-  'Caldería',
-  'Estructuras',
-  'Cerrajería',
-  'Corte Plasma',
-  'Mecanizado CNC',
-];
-
 export default function TallerScreen() {
+  const router = useRouter();
+  const [error, setError] = useState('');
+  const [cargando, setCargando] = useState(false);
   const [nombre, setNombre] = useState('');
   const [rut, setRut] = useState('');
   const [direccion, setDireccion] = useState('');
@@ -49,7 +42,32 @@ export default function TallerScreen() {
     setFotos(fotos.filter((f) => f !== uri));
   };
 
-  const toggleEspecialidad = (especialidad: string) => {
+  const handleRegistrar = async () => {
+    if (!nombre || !direccion || !telefono) {
+      setError('Completa al menos nombre, dirección y teléfono');
+      return;
+    }
+    setCargando(true);
+    setError('');
+    const { error: dbError } = await registrarTaller({
+      nombre,
+      rut,
+      direccion,
+      telefono,
+      whatsapp,
+      horario,
+      especialidades: seleccionadas,
+    });
+    setCargando(false);
+    if (dbError) {
+      // 23505 = ya existe un taller para esta cuenta
+      setError(dbError.code === '23505' ? 'Ya registraste un taller con esta cuenta' : dbError.message);
+    } else {
+      router.back();
+    }
+  };
+
+  const toggleEspecialidad =(especialidad: string) => {
     if (seleccionadas.includes(especialidad)) {
       setSeleccionadas(seleccionadas.filter((e) => e !== especialidad));
     } else {
@@ -175,8 +193,14 @@ export default function TallerScreen() {
         </View>
       )}
 
-      <TouchableOpacity style={tallerStyles.btnRegistrar}>
-        <Text style={tallerStyles.btnRegistrarTexto}>Registrar Taller</Text>
+      {error ? (
+        <Text style={{ color: 'red', textAlign: 'center', marginBottom: 8 }}>{error}</Text>
+      ) : null}
+
+      <TouchableOpacity style={tallerStyles.btnRegistrar} onPress={handleRegistrar} disabled={cargando}>
+        <Text style={tallerStyles.btnRegistrarTexto}>
+          {cargando ? 'Registrando...' : 'Registrar Taller'}
+        </Text>
       </TouchableOpacity>
 
     </ScrollView>
