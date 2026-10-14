@@ -1,10 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import { ThemeColors } from '../constants/theme';
 import { signUp } from '../services/auth';
 import { registroStyles } from '../styles/registroStyles';
+
+type TipoUsuario = 'cliente' | 'taller' | 'independiente';
+
 
 export default function RegistroScreen() {
     const router = useRouter();
@@ -13,6 +24,7 @@ export default function RegistroScreen() {
     const [clave, setClave] = useState('')
     const [telefono, setTelefono] = useState('')
     const [ciudad, setCiudad] = useState('')
+    const [tipoUsuario, setTipoUsuario] = useState<TipoUsuario>('cliente')
     const [confirmarClave, setConfirmarClave] = useState('')
     const [claveVisible, setClaveVisible] = useState(false)
     const [confirmarClaveVisible, setConfirmarClaveVisible] = useState(false)
@@ -53,6 +65,13 @@ export default function RegistroScreen() {
         <KeyboardAvoidingView
             style={registroStyles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+
+        >
+            <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={registroStyles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
         >
             {/* Logo y título */}
             <View style={registroStyles.logoContainer}>
@@ -163,6 +182,38 @@ export default function RegistroScreen() {
                 </View>
             </View>
 
+            {/* Tipo de usuario */}
+
+            <View style={registroStyles.contenedorRoles}>
+                <Text style={registroStyles.tituloRoles}>
+                    ¿Qué tipo de cuenta deseas crear?
+                </Text>
+
+                {([
+                    { valor: 'cliente', texto: '👤 Cliente' },
+                    { valor: 'taller', texto: '🏭 Taller' },
+                    { valor: 'independiente', texto: '🔧 Trabajador independiente' },
+                ] as const).map((opcion) => (
+                    <TouchableOpacity
+                        key={opcion.valor}
+                        onPress={() => setTipoUsuario(opcion.valor)}
+                        style={[
+                            registroStyles.opcionRol,
+                            tipoUsuario === opcion.valor &&
+                                registroStyles.opcionRolSeleccionada,
+                    ]}
+             >
+                    <Text style={registroStyles.textoOpcionRol}>
+                        {opcion.texto}
+                    </Text>
+                </TouchableOpacity>
+            ))}
+
+            <Text style={registroStyles.avisoRol}>
+                El tipo de cuenta no podrá cambiarse después del registro.
+            </Text>
+        </View>
+
             {/* Error */}
             {error ? (
                 <Text style={{ color: 'red', textAlign: 'center', marginTop: 8 }}>{error}</Text>
@@ -200,6 +251,8 @@ export default function RegistroScreen() {
                     <Text style={registroStyles.loginEnlace}>Inicia sesión</Text>
                 </TouchableOpacity>
             </View>
+
+             </ScrollView>
 
         </KeyboardAvoidingView>
   );

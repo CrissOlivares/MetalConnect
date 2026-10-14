@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { FontSizes, FontWeights, Radius, Spacing, ThemeColors } from '../constants/theme';
 
 export const registroStyles = StyleSheet.create({
-  contenedor: {
+  container: {
     flex: 1,
     backgroundColor: ThemeColors.fondo,
     paddingHorizontal: Spacing.md,
@@ -124,4 +124,48 @@ export const registroStyles = StyleSheet.create({
     fontSize: FontSizes.texto,
     fontWeight: FontWeights.bold,
   },
+
+  contenedorRoles: {
+  marginBottom: 20,
+  },
+
+  tituloRoles: {
+  color: '#FFFFFF',
+  fontSize: 16,
+  fontWeight: '600',
+  marginBottom: 12,
+  },
+
+  opcionRol: {
+  backgroundColor: '#262626',
+  padding: 16,
+  borderRadius: 12,
+  marginBottom: 10,
+  borderWidth: 1,
+  borderColor: '#444444',
+  },
+
+  opcionRolSeleccionada: {
+  backgroundColor: '#FF6B00',
+  borderColor: '#FF6B00',
+  },
+
+  textoOpcionRol: {
+  color: '#FFFFFF',
+  fontSize: 15,
+  fontWeight: '600',
+  },
+
+  avisoRol: {
+  color: '#A1A1AA',
+  fontSize: 12,
+  marginTop: 4,
+  },
+
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
+},
+
+  
 });

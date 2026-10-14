@@ -1,19 +1,18 @@
 
-
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
     Image,
     ScrollView,
-    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
+import { perfilStyles as styles } from '../../styles/perfilStyles';
 
 import { supabase } from '../../services/supabase';
 
@@ -31,12 +30,14 @@ type Perfil = {
 };
 
 export default function PerfilScreen() {
+  const router = useRouter();
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [correo, setCorreo] = useState('');
 
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [editando, setEditando] = useState(false);
+  const [mensajeError, setMensajeError] = useState('');
 
   const [nombre, setNombre] = useState('');
   const [telefono, setTelefono] = useState('');
@@ -44,62 +45,75 @@ export default function PerfilScreen() {
   const [descripcion, setDescripcion] = useState('');
   const [empresa, setEmpresa] = useState('');
 
+  // Obtener los datos del usuario desde Supabase
   const cargarPerfil = useCallback(async () => {
-    setCargando(true);
-
     try {
-      const { data, error: authError } =
+      setCargando(true);
+      setMensajeError('');
+
+      const { data: authData, error: authError } =
         await supabase.auth.getUser();
 
-      if (authError || !data.user) {
-        throw new Error('No hay una sesión activa');
+      if (authError) throw authError;
+
+      if (!authData.user) {
+        throw new Error('No se encontró una sesión activa.');
       }
 
-      setCorreo(data.user.email ?? '');
+      setCorreo(authData.user.email ?? '');
 
-      const { data: datosPerfil, error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('user_id', data.user.id)
+        .select(
+          'user_id, name, phone, address, description, company, avatar_url, is_premium, is_taller, is_independiente'
+        )
+        .eq('user_id', authData.user.id)
         .single();
 
       if (error) throw error;
 
-      setPerfil(datosPerfil);
-      setNombre(datosPerfil.name ?? '');
-      setTelefono(datosPerfil.phone ?? '');
-      setDireccion(datosPerfil.address ?? '');
-      setDescripcion(datosPerfil.description ?? '');
-      setEmpresa(datosPerfil.company ?? '');
+      const datos = data as Perfil;
 
+      setPerfil(datos);
+      setNombre(datos.name ?? '');
+      setTelefono(datos.phone ?? '');
+      setDireccion(datos.address ?? '');
+      setDescripcion(datos.description ?? '');
+      setEmpresa(datos.company ?? '');
     } catch (error: any) {
-      Alert.alert(
-        'Error',
-        error.message ?? 'No se pudo cargar el perfil'
-      );
+      const mensaje =
+        error.message ?? 'No se pudo cargar el perfil.';
+
+      setMensajeError(mensaje);
+      Alert.alert('Error', mensaje);
     } finally {
       setCargando(false);
     }
   }, []);
 
+  // Actualizar el perfil 
   useFocusEffect(
     useCallback(() => {
       cargarPerfil();
     }, [cargarPerfil])
   );
 
-  const guardarPerfil = async () => {
-    if (!perfil) return;
+  // Guardar los cambios del perfil
+  const guardarCambios = async () => {
+    if (!perfil || guardando) return;
 
     if (!nombre.trim()) {
-      Alert.alert('Error', 'El nombre no puede estar vacío');
+      Alert.alert(
+        'Atención',
+        'El nombre no puede estar vacío.'
+      );
       return;
     }
 
-    setGuardando(true);
-
     try {
-      const { error } = await supabase
+      setGuardando(true);
+
+      const { data, error } = await supabase
         .from('profiles')
         .update({
           name: nombre.trim(),
@@ -114,24 +128,30 @@ export default function PerfilScreen() {
 
       if (error) throw error;
 
-      await cargarPerfil();
+      if (!data) {
+        throw new Error(
+          'No se pudo confirmar la actualización del perfil.'
+        );
+      }
+
       setEditando(false);
+      await cargarPerfil();
 
       Alert.alert(
-        '¡Perfil actualizado!',
+        'Perfil actualizado',
         'Tus cambios se guardaron correctamente.'
       );
-
     } catch (error: any) {
       Alert.alert(
         'Error',
-        error.message ?? 'No se pudo actualizar el perfil'
+        error.message ?? 'No se pudieron guardar los cambios.'
       );
     } finally {
       setGuardando(false);
     }
   };
 
+  // Cancelar edición y restaurar los valores anteriores
   const cancelarEdicion = () => {
     if (!perfil) return;
 
@@ -140,28 +160,45 @@ export default function PerfilScreen() {
     setDireccion(perfil.address ?? '');
     setDescripcion(perfil.description ?? '');
     setEmpresa(perfil.company ?? '');
+
     setEditando(false);
   };
 
+  // Cerrar sesión
   const cerrarSesion = async () => {
+  try {
     const { error } = await supabase.auth.signOut();
 
     if (error) {
-      Alert.alert('Error', error.message);
+      throw error;
     }
-    // useAuth redirige automáticamente al login
-  };
 
+    setPerfil(null);
+    router.replace('/login');
+
+  } catch (error: any) {
+    Alert.alert(
+      'Error al cerrar sesión',
+      error.message ?? 'Inténtalo nuevamente.'
+    );
+  }
+};
+
+  // tipo de cuenta
   const tipoCuenta = perfil?.is_taller
     ? 'Taller'
     : perfil?.is_independiente
       ? 'Trabajador independiente'
       : 'Cliente';
 
+  // Pantalla de carga
   if (cargando && !perfil) {
     return (
       <View style={styles.centrado}>
-        <ActivityIndicator size="large" color="#FF6B00" />
+        <ActivityIndicator
+          size="large"
+          color="#FF6B00"
+        />
         <Text style={styles.textoSecundario}>
           Cargando perfil...
         </Text>
@@ -169,14 +206,33 @@ export default function PerfilScreen() {
     );
   }
 
+  // Pantalla de error
   if (!perfil) {
     return (
       <View style={styles.centrado}>
-        <Text style={styles.textoBlanco}>
-          No se encontró el perfil.
+        <Ionicons
+          name="alert-circle-outline"
+          size={50}
+          color="#FF6B00"
+        />
+
+        <Text style={styles.texto}>
+          No se pudo cargar tu perfil.
         </Text>
-        <TouchableOpacity onPress={cargarPerfil}>
-          <Text style={styles.textoNaranja}>Reintentar</Text>
+
+        {!!mensajeError && (
+          <Text style={styles.textoSecundario}>
+            {mensajeError}
+          </Text>
+        )}
+
+        <TouchableOpacity
+          style={styles.botonPrincipal}
+          onPress={cargarPerfil}
+        >
+          <Text style={styles.textoBoton}>
+            Reintentar
+          </Text>
         </TouchableOpacity>
       </View>
     );
@@ -184,139 +240,285 @@ export default function PerfilScreen() {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={styles.contenedor}
       contentContainerStyle={styles.contenido}
       keyboardShouldPersistTaps="handled"
     >
-      <Text style={styles.titulo}>Mi Perfil</Text>
+      {/* titulo */}
+      <Text style={styles.titulo}>
+        Mi perfil
+      </Text>
 
-      {/* Tarjeta principal */}
-      <View style={styles.tarjetaPerfil}>
-        <View style={styles.avatar}>
+      {/* tarjeta de perfil */}
+      <View style={styles.tarjeta}>
+        <View style={styles.avatarContenedor}>
           {perfil.avatar_url ? (
             <Image
               source={{ uri: perfil.avatar_url }}
-              style={styles.imagenAvatar}
+              style={styles.avatar}
             />
           ) : (
-            <Ionicons name="person" size={45} color="#FFFFFF" />
+            <View style={styles.avatarPlaceholder}>
+              <Ionicons
+                name="person"
+                size={42}
+                color="#FF6B00"
+              />
+            </View>
           )}
         </View>
 
-        <Text style={styles.nombre}>
+        <Text style={styles.nombrePerfil}>
           {perfil.name}
         </Text>
 
-        <Text style={styles.tipoCuenta}>
-          {tipoCuenta}
-        </Text>
-
-        <Text style={styles.premium}>
-          {perfil.is_premium
-            ? 'Cuenta Premium'
-            : 'Cuenta gratuita'}
-        </Text>
-      </View>
-
-      {/* Información personal */}
-      <View style={styles.tarjeta}>
-        <Text style={styles.seccion}>
-          Información personal
-        </Text>
-
-        <Campo
-          icono="person-outline"
-          etiqueta="Nombre completo"
-          valor={nombre}
-          cambiar={setNombre}
-          editable={editando}
-        />
-
-        <Campo
-          icono="mail-outline"
-          etiqueta="Correo electrónico"
-          valor={correo}
-          editable={false}
-        />
-
-        <Campo
-          icono="call-outline"
-          etiqueta="Teléfono"
-          valor={telefono}
-          cambiar={setTelefono}
-          editable={editando}
-        />
-
-        <Campo
-          icono="location-outline"
-          etiqueta="Ciudad / Dirección"
-          valor={direccion}
-          cambiar={setDireccion}
-          editable={editando}
-        />
-
-        <Campo
-          icono="document-text-outline"
-          etiqueta="Descripción"
-          valor={descripcion}
-          cambiar={setDescripcion}
-          editable={editando}
-          multilinea
-        />
-
-        {(perfil.is_taller || perfil.is_independiente) && (
-          <Campo
-            icono="business-outline"
-            etiqueta="Empresa / Taller"
-            valor={empresa}
-            cambiar={setEmpresa}
-            editable={editando}
+        <View style={styles.etiquetaRol}>
+          <Ionicons
+            name={
+              perfil.is_taller
+                ? 'business-outline'
+                : perfil.is_independiente
+                  ? 'construct-outline'
+                  : 'person-outline'
+            }
+            size={16}
+            color="#FF6B00"
           />
+
+          <Text style={styles.textoRol}>
+            {tipoCuenta}
+          </Text>
+        </View>
+
+        {perfil.is_premium && (
+          <View style={styles.etiquetaPremium}>
+            <Ionicons
+              name="star"
+              size={15}
+              color="#FFD700"
+            />
+
+            <Text style={styles.textoPremium}>
+              Cuenta Premium
+            </Text>
+          </View>
         )}
       </View>
 
-      {/* Botones */}
-      {!editando ? (
-        <TouchableOpacity
-          style={styles.botonPrincipal}
-          onPress={() => setEditando(true)}
-        >
-          <Ionicons name="create-outline" size={20} color="#FFFFFF" />
-          <Text style={styles.textoBoton}>
-            Editar perfil
+      {/* informacion personal */}
+      <View style={styles.tarjeta}>
+        <View style={styles.encabezadoSeccion}>
+          <Text style={styles.subtitulo}>
+            Información personal
           </Text>
-        </TouchableOpacity>
-      ) : (
-        <>
-          <TouchableOpacity
-            style={styles.botonPrincipal}
-            onPress={guardarPerfil}
-            disabled={guardando}
-          >
-            <Ionicons name="save-outline" size={20} color="#FFFFFF" />
-            <Text style={styles.textoBoton}>
-              {guardando ? 'Guardando...' : 'Guardar cambios'}
-            </Text>
-          </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.botonCancelar}
-            onPress={cancelarEdicion}
-            disabled={guardando}
-          >
-            <Text style={styles.textoCancelar}>
-              Cancelar
-            </Text>
-          </TouchableOpacity>
-        </>
-      )}
+          {!editando && (
+            <TouchableOpacity
+              onPress={() => setEditando(true)}
+              style={styles.botonEditar}
+            >
+              <Ionicons
+                name="create-outline"
+                size={18}
+                color="#FF6B00"
+              />
 
+              <Text style={styles.textoEditar}>
+                Editar
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* nombre */}
+        <Text style={styles.etiqueta}>
+          Nombre
+        </Text>
+
+        {editando ? (
+          <TextInput
+            style={styles.input}
+            value={nombre}
+            onChangeText={setNombre}
+            placeholder="Tu nombre"
+            placeholderTextColor="#777777"
+          />
+        ) : (
+          <Text style={styles.valor}>
+            {perfil.name}
+          </Text>
+        )}
+
+        {/* correo */}
+        <Text style={styles.etiqueta}>
+          Correo electrónico
+        </Text>
+
+        <Text style={styles.valor}>
+          {correo || 'No registrado'}
+        </Text>
+
+        {/* teléfono */}
+        <Text style={styles.etiqueta}>
+          Teléfono
+        </Text>
+
+        {editando ? (
+          <TextInput
+            style={styles.input}
+            value={telefono}
+            onChangeText={setTelefono}
+            placeholder="Tu teléfono"
+            placeholderTextColor="#777777"
+            keyboardType="phone-pad"
+          />
+        ) : (
+          <Text style={styles.valor}>
+            {perfil.phone || 'No registrado'}
+          </Text>
+        )}
+
+        {/* dirección */}
+        <Text style={styles.etiqueta}>
+          Dirección o ciudad
+        </Text>
+
+        {editando ? (
+          <TextInput
+            style={styles.input}
+            value={direccion}
+            onChangeText={setDireccion}
+            placeholder="Tu dirección o ciudad"
+            placeholderTextColor="#777777"
+          />
+        ) : (
+          <Text style={styles.valor}>
+            {perfil.address || 'No registrada'}
+          </Text>
+        )}
+
+        {/* empresa */}
+        <Text style={styles.etiqueta}>
+          Empresa o taller
+        </Text>
+
+        {editando ? (
+          <TextInput
+            style={styles.input}
+            value={empresa}
+            onChangeText={setEmpresa}
+            placeholder="Nombre de empresa o taller"
+            placeholderTextColor="#777777"
+          />
+        ) : (
+          <Text style={styles.valor}>
+            {perfil.company || 'No registrada'}
+          </Text>
+        )}
+
+        {/* descripcion*/}
+        <Text style={styles.etiqueta}>
+          Descripción
+        </Text>
+
+        {editando ? (
+          <TextInput
+            style={[
+              styles.input,
+              styles.inputDescripcion,
+            ]}
+            value={descripcion}
+            onChangeText={setDescripcion}
+            placeholder="Cuéntanos sobre ti o tus servicios"
+            placeholderTextColor="#777777"
+            multiline
+            textAlignVertical="top"
+          />
+        ) : (
+          <Text style={styles.valor}>
+            {perfil.description || 'Sin descripción'}
+          </Text>
+        )}
+
+        {/* editar cuenta */}
+        {editando && (
+          <View style={styles.contenedorBotones}>
+            <TouchableOpacity
+              style={styles.botonCancelar}
+              onPress={cancelarEdicion}
+              disabled={guardando}
+            >
+              <Text style={styles.textoCancelar}>
+                Cancelar
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.botonGuardar,
+                guardando && styles.botonDeshabilitado,
+              ]}
+              onPress={guardarCambios}
+              disabled={guardando}
+            >
+              {guardando ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.textoBoton}>
+                  Guardar cambios
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
+      {/* información de cuenta */}
+      <View style={styles.tarjeta}>
+        <Text style={styles.subtitulo}>
+          Información de la cuenta
+        </Text>
+
+        <View style={styles.filaInformacion}>
+          <Text style={styles.textoSecundario}>
+            Tipo de cuenta
+          </Text>
+
+          <Text style={styles.valorInformacion}>
+            {tipoCuenta}
+          </Text>
+        </View>
+
+        <View style={styles.separador} />
+
+        <View style={styles.filaInformacion}>
+          <Text style={styles.textoSecundario}>
+            Membresía
+          </Text>
+
+          <Text style={styles.valorInformacion}>
+            {perfil.is_premium ? 'Premium' : 'Gratuita'}
+          </Text>
+        </View>
+
+        <Text style={styles.avisoRol}>
+          El tipo de cuenta no puede modificarse
+          después del registro.
+        </Text>
+      </View>
+
+      {/* CERRAR SESIÓN */}
       <TouchableOpacity
-        style={styles.botonCerrar}
+        style={styles.botonCerrarSesion}
         onPress={cerrarSesion}
       >
-        <Ionicons name="log-out-outline" size={20} color="#FF6B00" />
-        <Text style={styles.textoCerrar}>
+        <Ionicons
+          name="log-out-outline"
+          size={20}
+          color="#FF6B00"
+        />
+
+        <Text style={styles.textoCerrarSesion}>
           Cerrar sesión
         </Text>
       </TouchableOpacity>
@@ -324,194 +526,5 @@ export default function PerfilScreen() {
   );
 }
 
-// Componente reutilizable para los campos
-function Campo({
-  icono,
-  etiqueta,
-  valor,
-  cambiar,
-  editable,
-  multilinea = false,
-}: {
-  icono: keyof typeof Ionicons.glyphMap;
-  etiqueta: string;
-  valor: string;
-  cambiar?: (texto: string) => void;
-  editable: boolean;
-  multilinea?: boolean;
-}) {
-  return (
-    <View style={styles.campoContenedor}>
-      <Ionicons name={icono} size={22} color="#FF6B00" />
 
-      <View style={{ flex: 1 }}>
-        <Text style={styles.etiqueta}>{etiqueta}</Text>
 
-        {editable ? (
-          <TextInput
-            style={[
-              styles.input,
-              multilinea && { minHeight: 80 },
-            ]}
-            value={valor}
-            onChangeText={cambiar}
-            placeholder="No especificado"
-            placeholderTextColor="#777777"
-            multiline={multilinea}
-          />
-        ) : (
-          <Text style={styles.valor}>
-            {valor || 'No especificado'}
-          </Text>
-        )}
-      </View>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#181818',
-  },
-  contenido: {
-    padding: 20,
-    paddingTop: 50,
-    paddingBottom: 40,
-  },
-  centrado: {
-    flex: 1,
-    backgroundColor: '#181818',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 15,
-  },
-  titulo: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 25,
-  },
-  tarjetaPerfil: {
-    backgroundColor: '#262626',
-    borderRadius: 16,
-    padding: 25,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#FF6B00',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-    overflow: 'hidden',
-  },
-  imagenAvatar: {
-    width: '100%',
-    height: '100%',
-  },
-  nombre: {
-    color: '#FFFFFF',
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
-  tipoCuenta: {
-    color: '#A1A1AA',
-    marginTop: 5,
-    fontSize: 14,
-  },
-  premium: {
-    color: '#FF6B00',
-    fontWeight: '600',
-    marginTop: 8,
-  },
-  tarjeta: {
-    backgroundColor: '#262626',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
-  },
-  seccion: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 22,
-  },
-  campoContenedor: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    marginBottom: 22,
-  },
-  etiqueta: {
-    color: '#A1A1AA',
-    fontSize: 12,
-    marginBottom: 5,
-  },
-  valor: {
-    color: '#FFFFFF',
-    fontSize: 15,
-  },
-  input: {
-    color: '#FFFFFF',
-    backgroundColor: '#333333',
-    borderWidth: 1,
-    borderColor: '#555555',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 15,
-  },
-  botonPrincipal: {
-    backgroundColor: '#FF6B00',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    marginBottom: 12,
-  },
-  textoBoton: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  botonCancelar: {
-    padding: 14,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  textoCancelar: {
-    color: '#A1A1AA',
-    fontSize: 15,
-  },
-  botonCerrar: {
-    borderWidth: 1,
-    borderColor: '#FF6B00',
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: 10,
-  },
-  textoCerrar: {
-    color: '#FF6B00',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  textoBlanco: {
-    color: '#FFFFFF',
-  },
-  textoSecundario: {
-    color: '#A1A1AA',
-  },
-  textoNaranja: {
-    color: '#FF6B00',
-    marginTop: 12,
-  },
-});
