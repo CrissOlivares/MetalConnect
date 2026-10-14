@@ -34,7 +34,13 @@ export default function RegistroScreen() {
         }
         setCargando(true)
         setError('')
-        const {error: authError } = await signUp(correo, clave)
+        const { error: authError } = await signUp(
+        correo.trim(),
+        clave,
+        nombre.trim(),
+        telefono.trim(),
+        ciudad.trim()
+        );
         if (authError) {
             setError(authError.message)
         } else {
@@ -45,7 +51,7 @@ export default function RegistroScreen() {
 
     return (
         <KeyboardAvoidingView
-            style={registroStyles.contenedor}
+            style={registroStyles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             {/* Logo y título */}
