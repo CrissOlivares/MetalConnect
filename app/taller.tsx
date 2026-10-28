@@ -1,17 +1,33 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { especialidades } from '../constants/especialidades';
 import { ThemeColors } from '../constants/theme';
-import { registrarTaller } from '../services/talleres';
+import { supabase } from '../services/supabase';
 import { tallerStyles } from '../styles/tallerStyles';
 
+const especialidades = [
+  'Soldadura MIG/TIG',
+  'Carpintería Metálica',
+  'Torno/Fresado',
+  'Corte Láser',
+  'Plegado',
+  'Caldería',
+  'Estructuras',
+  'Cerrajería',
+  'Corte Plasma',
+  'Mecanizado CNC',
+];
+
 export default function TallerScreen() {
+
   const router = useRouter();
-  const [error, setError] = useState('');
-  const [cargando, setCargando] = useState(false);
+
+  const [usuarioId, setUsuarioId] = useState<string | null>(null);
+  const [verificandoRol, setVerificandoRol] = useState(true);
+  const [accesoPermitido, setAccesoPermitido] = useState(false);
+
   const [nombre, setNombre] = useState('');
   const [rut, setRut] = useState('');
   const [direccion, setDireccion] = useState('');
@@ -20,6 +36,44 @@ export default function TallerScreen() {
   const [horario, setHorario] = useState('');
   const [seleccionadas, setSeleccionadas] = useState<string[]>([]);
   const [fotos, setFotos] = useState<string[]>([]);
+
+  useEffect(() => {
+    const verificarRol = async () => {
+      try {
+        const { data: authData, error: authError } =
+          await supabase.auth.getUser();
+
+          if(authError || !authData.user) {
+            router.replace('/login');
+            return;
+          }
+
+          const { data: perfil, error } = await supabase
+            .from('profiles')
+            .select('is_taller')
+            .eq('user_id', authData.user.id)
+            .single();
+
+          if (error || !perfil?.is_taller) {
+            setAccesoPermitido(false);
+            return;
+          }
+
+          setUsuarioId(authData.user.id);
+          setAccesoPermitido(true);
+        } catch (error) {
+          console.error('Error verificando el rol:', error);
+          setAccesoPermitido(false);
+        } finally {
+          setVerificandoRol(false);
+        }
+     };
+
+     verificarRol();
+  }, [router]);
+
+
+
 
   const seleccionarFotos = async () => {
     const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -42,32 +96,7 @@ export default function TallerScreen() {
     setFotos(fotos.filter((f) => f !== uri));
   };
 
-  const handleRegistrar = async () => {
-    if (!nombre || !direccion || !telefono) {
-      setError('Completa al menos nombre, dirección y teléfono');
-      return;
-    }
-    setCargando(true);
-    setError('');
-    const { error: dbError } = await registrarTaller({
-      nombre,
-      rut,
-      direccion,
-      telefono,
-      whatsapp,
-      horario,
-      especialidades: seleccionadas,
-    });
-    setCargando(false);
-    if (dbError) {
-      // 23505 = ya existe un taller para esta cuenta
-      setError(dbError.code === '23505' ? 'Ya registraste un taller con esta cuenta' : dbError.message);
-    } else {
-      router.back();
-    }
-  };
-
-  const toggleEspecialidad =(especialidad: string) => {
+  const toggleEspecialidad = (especialidad: string) => {
     if (seleccionadas.includes(especialidad)) {
       setSeleccionadas(seleccionadas.filter((e) => e !== especialidad));
     } else {
@@ -75,15 +104,51 @@ export default function TallerScreen() {
     }
   };
 
+  if (verificandoRol) {
+    return (
+      <View style={tallerStyles.pantallaVerificacion}>
+        <Text style={tallerStyles.textoVerificacion}>
+          Verificando Cuenta...
+        </Text>
+      </View>
+
+    );
+  }
+
+  if (!accesoPermitido) {
+    return (
+      <View style={tallerStyles.pantallaAccesoRestringido}>
+        <Ionicons name= "lock-closed-outline" size={55} color="#FF6B00"/>
+
+        <Text style={tallerStyles.tituloAccesoRestringido}>
+          Acceso restringido
+        </Text>
+
+        <Text style={tallerStyles.textoAccesoRestringido}>
+          Solo los usuarios registrados como Talleres pueden ingresar a esta sección. Si crees que esto es un error, por favor contacta al soporte.
+        </Text>
+
+        <TouchableOpacity style={[tallerStyles.btnRegistrar, tallerStyles.botonVolverPerfil,]}
+          onPress={() => router.replace('/(tabs)/perfil')}
+        >
+          <Text style= {tallerStyles.btnRegistrarTexto}>
+            Volver a mi Perfil 
+          </Text>
+        </TouchableOpacity>
+
+        </View>
+    );
+  }
+
   return (
-    <ScrollView style={tallerStyles.contenedor} showsVerticalScrollIndicator={false}>
+    <ScrollView style={tallerStyles.container} showsVerticalScrollIndicator={false}>
 
       <Text style={tallerStyles.titulo}>Registrar Mi Taller</Text>
       <Text style={tallerStyles.subtitulo}>
         Completa la información de tu empresa para recibir solicitudes
       </Text>
 
-      <View style={tallerStyles.campoContenedor}>
+      <View style={tallerStyles.campoContainer}>
         <Text style={tallerStyles.etiqueta}>Nombre del Taller</Text>
         <TextInput
           style={tallerStyles.campo}
@@ -94,7 +159,7 @@ export default function TallerScreen() {
         />
       </View>
 
-      <View style={tallerStyles.campoContenedor}>
+      <View style={tallerStyles.campoContainer}>
         <Text style={tallerStyles.etiqueta}>RUT Empresa</Text>
         <TextInput
           style={tallerStyles.campo}
@@ -105,7 +170,7 @@ export default function TallerScreen() {
         />
       </View>
 
-      <View style={tallerStyles.campoContenedor}>
+      <View style={tallerStyles.campoContainer}>
         <Text style={tallerStyles.etiqueta}>Dirección</Text>
         <TextInput
           style={tallerStyles.campo}
@@ -141,7 +206,7 @@ export default function TallerScreen() {
         </View>
       </View>
 
-      <View style={tallerStyles.campoContenedor}>
+      <View style={tallerStyles.campoContainer}>
         <Text style={tallerStyles.etiqueta}>Horario de Atención</Text>
         <TextInput
           style={tallerStyles.campo}
@@ -193,14 +258,8 @@ export default function TallerScreen() {
         </View>
       )}
 
-      {error ? (
-        <Text style={{ color: 'red', textAlign: 'center', marginBottom: 8 }}>{error}</Text>
-      ) : null}
-
-      <TouchableOpacity style={tallerStyles.btnRegistrar} onPress={handleRegistrar} disabled={cargando}>
-        <Text style={tallerStyles.btnRegistrarTexto}>
-          {cargando ? 'Registrando...' : 'Registrar Taller'}
-        </Text>
+      <TouchableOpacity style={tallerStyles.btnRegistrar}>
+        <Text style={tallerStyles.btnRegistrarTexto}>Registrar Taller</Text>
       </TouchableOpacity>
 
     </ScrollView>
