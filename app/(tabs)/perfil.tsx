@@ -3,14 +3,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { perfilStyles as styles } from '../../styles/perfilStyles';
 
@@ -191,6 +191,22 @@ export default function PerfilScreen() {
       ? 'Trabajador independiente'
       : 'Cliente';
 
+  const esCliente = !perfil?.is_taller && !perfil?.is_independiente;
+  const esTaller = perfil?.is_taller === true;
+  const esIndependiente = perfil?.is_independiente === true;
+
+  const tituloSeccion = esTaller
+    ? 'Información del taller'
+    : esIndependiente
+      ? 'Información profesional'
+      : 'Información personal';
+  
+  const etiquetaDescripcion = esTaller
+    ? 'Descripción del taller'
+    : esIndependiente
+      ? 'Descripción profesional'
+      : 'Sobre mí';
+
   // Pantalla de carga
   if (cargando && !perfil) {
     return (
@@ -309,7 +325,7 @@ export default function PerfilScreen() {
       <View style={styles.tarjeta}>
         <View style={styles.encabezadoSeccion}>
           <Text style={styles.subtitulo}>
-            Información personal
+            {tituloSeccion}
           </Text>
 
           {!editando && (
@@ -380,7 +396,7 @@ export default function PerfilScreen() {
 
         {/* dirección */}
         <Text style={styles.etiqueta}>
-          Dirección o ciudad
+          {esTaller ? 'Dirección del taller' : 'Ubicación'}
         </Text>
 
         {editando ? (
@@ -397,11 +413,13 @@ export default function PerfilScreen() {
           </Text>
         )}
 
-        {/* empresa */}
-        <Text style={styles.etiqueta}>
-          Empresa o taller
-        </Text>
-
+      {!esCliente && (
+        <>
+          {/* empresa */}
+          <Text style={styles.etiqueta}>
+            {esTaller ? 'Nombre del taller' : 'Empresa o emprendimiento'}
+          </Text>
+        
         {editando ? (
           <TextInput
             style={styles.input}
@@ -415,10 +433,12 @@ export default function PerfilScreen() {
             {perfil.company || 'No registrada'}
           </Text>
         )}
+        </>
+      )}
 
         {/* descripcion*/}
         <Text style={styles.etiqueta}>
-          Descripción
+          {etiquetaDescripcion}
         </Text>
 
         {editando ? (
@@ -429,7 +449,13 @@ export default function PerfilScreen() {
             ]}
             value={descripcion}
             onChangeText={setDescripcion}
-            placeholder="Cuéntanos sobre ti o tus servicios"
+            placeholder={
+              esTaller
+                ? 'Describe tu taller y los servicios que ofreces'
+                : esIndependiente
+                  ? 'Describe tu experiencia y habilidades profesionales'
+                  : 'Cuéntanos un poco sobre ti'
+            }
             placeholderTextColor="#777777"
             multiline
             textAlignVertical="top"
@@ -472,6 +498,23 @@ export default function PerfilScreen() {
           </View>
         )}
       </View>
+
+      {/* registro de taller: usuarios con el rol de taller */}
+      {esTaller && (
+        <TouchableOpacity
+          style={styles.botonPrincipal}
+          onPress={() => router.push('/taller')}
+        >
+          <Text style={styles.textoBoton}>
+            Registrar mi taller
+          </Text>
+        </TouchableOpacity>
+      )}
+    
+
+
+
+
 
       {/* información de cuenta */}
       <View style={styles.tarjeta}>

@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { FontSizes, FontWeights, Radius, Spacing, ThemeColors } from '../constants/theme';
 
 export const tallerStyles = StyleSheet.create({
-  contenedor: {
+  container: {
     flex: 1,
     backgroundColor: ThemeColors.fondo,
     paddingHorizontal: Spacing.md,
@@ -19,7 +19,7 @@ export const tallerStyles = StyleSheet.create({
     color: ThemeColors.textoGris,
     marginBottom: Spacing.lg,
   },
-  campoContenedor: {
+  campoContainer: {
     marginBottom: Spacing.sm,
   },
   etiqueta: {
@@ -138,4 +138,45 @@ export const tallerStyles = StyleSheet.create({
     fontSize: FontSizes.texto,
     fontWeight: FontWeights.bold,
   },
+
+  pantallaVerificacion: {
+  flex: 1,
+  backgroundColor: '#181818',
+  justifyContent: 'center',
+  alignItems: 'center',
+  },
+
+  textoVerificacion: {
+  color: '#FFFFFF',
+  },
+
+  pantallaAccesoRestringido: {
+  flex: 1,
+  backgroundColor: '#181818',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 20,
+  },
+
+  tituloAccesoRestringido: {
+  color: '#FFFFFF',
+  fontSize: 20,
+  fontWeight: 'bold',
+  marginTop: 15,
+  textAlign: 'center',
+  },
+
+  textoAccesoRestringido: {
+  color: '#A1A1AA',
+  textAlign: 'center',
+  marginTop: 10,
+  },
+
+  botonVolverPerfil: {
+  marginTop: 25,
+  },
+
+
+
+
 });

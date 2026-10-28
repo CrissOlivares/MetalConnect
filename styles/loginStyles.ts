@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { FontSizes, FontWeights, Radius, Spacing, ThemeColors } from '../constants/theme';
 
 export const loginStyles = StyleSheet.create({
-  contenedor: {
+  container: {
     flex: 1,
     backgroundColor: ThemeColors.fondo,
     paddingHorizontal: Spacing.md,

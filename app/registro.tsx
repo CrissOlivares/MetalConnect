@@ -46,9 +46,9 @@ export default function RegistroScreen() {
         }
         setSelectorAbierto(null);
     }
+
+    
             
-
-
     const handleRegistro = async () => {
         if (!nombre || !correo || !telefono || !ciudad || !clave || !confirmarClave) {
             setError('Por favor completa todos los campos')
@@ -87,7 +87,8 @@ export default function RegistroScreen() {
         clave,
         nombre.trim(),
         telefonoCompleto,
-        ubicacionCompleta
+        ubicacionCompleta,
+        tipoUsuario
         );
         if (authError) {
             setError(authError.message)
