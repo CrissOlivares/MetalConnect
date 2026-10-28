@@ -33,6 +33,10 @@ export default function PerfilScreen() {
   const router = useRouter();
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const [correo, setCorreo] = useState('');
+  const[tallerRegistrado, setTallerRegistrado] = useState<{
+    nombre: String;
+    direccion: string | null;
+  } | null>(null);
 
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -80,6 +84,21 @@ export default function PerfilScreen() {
       setDireccion(datos.address ?? '');
       setDescripcion(datos.description ?? '');
       setEmpresa(datos.company ?? '');
+
+      if(datos.is_taller){
+        const { data: taller, error: errorTaller } = await supabase
+          .from('talleres')
+          .select('nombre, direccion')
+          .eq('user_id', authData.user.id)
+          .maybeSingle();
+
+        if (errorTaller) throw errorTaller;
+
+        setTallerRegistrado(taller);
+      } else {
+        setTallerRegistrado(null);
+      }
+
     } catch (error: any) {
       const mensaje =
         error.message ?? 'No se pudo cargar el perfil.';
@@ -420,7 +439,7 @@ export default function PerfilScreen() {
             {esTaller ? 'Nombre del taller' : 'Empresa o emprendimiento'}
           </Text>
         
-        {editando ? (
+        {editando && !esTaller ? (
           <TextInput
             style={styles.input}
             value={empresa}
@@ -430,7 +449,9 @@ export default function PerfilScreen() {
           />
         ) : (
           <Text style={styles.valor}>
-            {perfil.company || 'No registrada'}
+            {esTaller
+              ? tallerRegistrado?.nombre || 'No registrado'
+              : perfil.company || 'No registrada'}
           </Text>
         )}
         </>
@@ -500,11 +521,12 @@ export default function PerfilScreen() {
       </View>
 
       {/* registro de taller: usuarios con el rol de taller */}
-      {esTaller && (
+      {esTaller && !tallerRegistrado && (
         <TouchableOpacity
-          style={styles.botonPrincipal}
+          style={styles.botonRegistrarTaller}
           onPress={() => router.push('/taller')}
         >
+          <Ionicons name="business-outline" size={20} color="#FFFFFF"/>
           <Text style={styles.textoBoton}>
             Registrar mi taller
           </Text>

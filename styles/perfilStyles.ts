@@ -255,6 +255,25 @@ export const perfilStyles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
+   botonRegistrarTaller: {
+   backgroundColor: '#FF6B00',
+   paddingVertical: 15,
+   paddingHorizontal: 25,
+   borderRadius: 12,
+   flexDirection: 'row',
+   alignItems: 'center',
+   justifyContent: 'center',
+   gap: 10,
+   alignSelf: 'center',
+   marginVertical: 20,
+   },
+
+   textoBotonRegistrarTaller: {
+   color: '#FFFFFF',
+   fontSize: 16,
+   fontWeight: 'bold',
+   },
+
 
 
 

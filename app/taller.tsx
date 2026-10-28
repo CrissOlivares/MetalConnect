@@ -104,6 +104,77 @@ export default function TallerScreen() {
     }
   };
 
+  const registrarTaller = async () => {
+    if (!nombre.trim()) {
+      Alert.alert('Campo Obligatorio', 'Ingresa el nombre del taller.');
+      return;
+    }
+
+    if (seleccionadas.length === 0){
+      Alert.alert('Especialidades', 'Selecciona al menos una especialidad');
+      return;
+    }
+
+    try {
+      const { data: authData, error: authError} =
+        await supabase.auth.getUser();
+
+      
+      if (authError || !authData.user) {
+        Alert.alert('Error', 'Debes iniciar sesión para registrar un taller.');
+        return;
+      }
+
+      // guardar taller en base de datos
+
+      const { error } = await supabase
+        .from('talleres')
+        .insert({
+          user_id: authData.user.id,
+          nombre: nombre.trim(),
+          rut: rut.trim() || null,
+          direccion: direccion.trim() || null,
+          telefono: telefono.trim() || null,
+          whatsapp: whatsapp.trim() || null,
+          horario: horario.trim() || null,
+          especialidades: seleccionadas,
+        });
+      
+        if (error) {
+          console.error('Error al registrar el taller:', error);
+
+          if (error.code === '23505') {
+            Alert.alert('Taller existente', 'Ya tienes un taller registrado');
+          
+          } else {
+            Alert.alert('Error', 'No se pudo registrar el taller. Intente de nuevo.');
+          }
+
+          return;
+        }
+
+        Alert.alert('¡Registro exitoso!', 'Tu taller se ha registrado correctamente',
+          [
+            {
+              text: 'Aceptar',
+              onPress: () => router.replace('/(tabs)/perfil'),
+            },
+          ]
+        );
+    
+    } catch (error) {
+      console.error('Error inesperado:', error);
+
+      Alert.alert('Error', 'Ocurrió un problema al registrar el taller');
+    }
+  };
+
+
+
+
+
+
+
   if (verificandoRol) {
     return (
       <View style={tallerStyles.pantallaVerificacion}>
@@ -258,8 +329,10 @@ export default function TallerScreen() {
         </View>
       )}
 
-      <TouchableOpacity style={tallerStyles.btnRegistrar}>
-        <Text style={tallerStyles.btnRegistrarTexto}>Registrar Taller</Text>
+      <TouchableOpacity style={tallerStyles.btnRegistrar} onPress={registrarTaller}>
+        <Text style={tallerStyles.btnRegistrarTexto}>
+          Registrar Taller
+        </Text>
       </TouchableOpacity>
 
     </ScrollView>
