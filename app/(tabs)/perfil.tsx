@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { perfilStyles as styles } from '../../styles/perfilStyles';
 
 import { supabase } from '../../services/supabase';
@@ -48,6 +49,7 @@ export default function PerfilScreen() {
   const [direccion, setDireccion] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [empresa, setEmpresa] = useState('');
+  const insets = useSafeAreaInsets();
 
   // Obtener los datos del usuario desde Supabase
   const cargarPerfil = useCallback(async () => {
@@ -276,13 +278,10 @@ export default function PerfilScreen() {
   return (
     <ScrollView
       style={styles.contenedor}
-      contentContainerStyle={styles.contenido}
+      contentContainerStyle={{ paddingTop: insets.top + 20,}}
       keyboardShouldPersistTaps="handled"
     >
-      {/* titulo */}
-      <Text style={styles.titulo}>
-        Mi perfil
-      </Text>
+
 
       {/* tarjeta de perfil */}
       <View style={styles.tarjeta}>

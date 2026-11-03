@@ -1,9 +1,11 @@
+import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { especialidades } from '../constants/especialidades';
 import { ThemeColors } from '../constants/theme';
+import { comunasPorRegion, regiones } from '../constants/ubicaciones';
 import { publicarTrabajo } from '../services/trabajos';
 import { tallerStyles } from '../styles/tallerStyles';
 
@@ -11,7 +13,8 @@ export default function PublicarTrabajoScreen() {
   const router = useRouter();
   const [titulo, setTitulo] = useState('');
   const [categoria, setCategoria] = useState('');
-  const [ubicacion, setUbicacion] = useState('');
+  const [region, setRegion] = useState('');
+  const [comuna, setComuna] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
@@ -40,12 +43,13 @@ export default function PublicarTrabajoScreen() {
   };
 
   const handlePublicar = async () => {
-    if (!titulo || !categoria || !ubicacion || !descripcion) {
+    if (!titulo || !categoria || !region || !comuna || !descripcion.trim()) {
       setError('Por favor completa todos los campos');
       return;
     }
     setCargando(true);
     setError('');
+    const ubicacion = `${comuna}, ${region}`;
     const { error: dbError } = await publicarTrabajo({ titulo, categoria, ubicacion, descripcion }, fotos);
     setCargando(false);
     if (dbError) {
@@ -56,13 +60,15 @@ export default function PublicarTrabajoScreen() {
   };
 
   return (
-    <ScrollView style={tallerStyles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={tallerStyles.container} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
 
       <Text style={tallerStyles.titulo}>Publicar Trabajo</Text>
       <Text style={tallerStyles.subtitulo}>
         Describe lo que necesitas y recibe presupuestos de talleres
       </Text>
 
+
+      {/* TITULO */}
       <View style={tallerStyles.campoContainer}>
         <Text style={tallerStyles.etiqueta}>Título</Text>
         <TextInput
@@ -74,79 +80,126 @@ export default function PublicarTrabajoScreen() {
         />
       </View>
 
-      <View style={tallerStyles.campoContainer}>
-        <Text style={tallerStyles.etiqueta}>Ubicación</Text>
-        <TextInput
-          style={tallerStyles.campo}
-          placeholder="Las Condes, Santiago"
-          placeholderTextColor={ThemeColors.textoGris}
-          value={ubicacion}
-          onChangeText={setUbicacion}
-        />
-      </View>
+      {/* REGIÓN */}
 
       <View style={tallerStyles.campoContainer}>
-        <Text style={tallerStyles.etiqueta}>Descripción</Text>
-        <TextInput
-          style={[tallerStyles.campo, { minHeight: 100, textAlignVertical: 'top' }]}
-          placeholder="Medidas, materiales, plazos..."
-          placeholderTextColor={ThemeColors.textoGris}
-          value={descripcion}
-          onChangeText={setDescripcion}
-          multiline
-        />
+        <Text style={tallerStyles.etiqueta}>Región</Text>
+
+        <View style={tallerStyles.pickerContainer}>
+          <Picker
+            selectedValue={region}
+            onValueChange={(valor) => {
+              setRegion(valor);
+              setComuna('');
+            }}
+            mode="dropdown"
+            dropdownIconColor="#FFFFFF"
+            style={tallerStyles.picker}
+          >
+            <Picker.Item label="Selecciona una región" value="" />
+
+            {regiones.map((item) => (
+              <Picker.Item
+                key={item.value}
+                label={item.label}
+                value={item.value}
+              />
+            ))}
+          </Picker>
+        </View>
       </View>
 
-      <Text style={tallerStyles.especialidadesTitulo}>Categoría</Text>
-      <View style={tallerStyles.especialidadesGrilla}>
-        {especialidades.map((especialidad) => {
-          const activa = categoria === especialidad;
-          return (
-            <TouchableOpacity
-              key={especialidad}
-              style={[tallerStyles.especialidadBtn, activa && tallerStyles.especialidadBtnActiva]}
-              onPress={() => setCategoria(especialidad)}
-            >
-              <Text style={[tallerStyles.especialidadTexto, activa && tallerStyles.especialidadTextoActiva]}>
-                {especialidad}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+      {/* COMUNA */}
+
+      <View style={tallerStyles.campoContainer}>
+        <Text style={tallerStyles.etiqueta}>Comuna</Text>
+
+        <View style={tallerStyles.pickerContainer}>
+          <Picker
+            selectedValue={comuna}
+            onValueChange={setComuna}
+            enabled={!!region}
+            mode="dropdown"
+            dropdownIconColor="#FFFFFF"
+            style={tallerStyles.picker}
+          >
+            <Picker.Item label="Selecciona una comuna" value="" />
+
+            {(comunasPorRegion[region] ?? []).map((item) => (
+              <Picker.Item
+                key={item}
+                label={item}
+                value={item}
+              />
+            ))}
+          </Picker>
+        </View>
       </View>
 
-      <Text style={tallerStyles.portafolioTitulo}>Fotografías del trabajo (opcional)</Text>
-      <TouchableOpacity style={tallerStyles.portafolioArea} onPress={seleccionarFotos}>
-        <Text style={tallerStyles.portafolioTexto}>📸 Agregar fotografías</Text>
-        <Text style={tallerStyles.portafolioSubtexto}>Máximo 5 imágenes (JPG, PNG o WebP)</Text>
-      </TouchableOpacity>
 
-      {fotos.length > 0 && (
-        <View style={tallerStyles.fotosGrilla}>
-          {fotos.map((uri) => (
-            <View key={uri} style={tallerStyles.fotoContenedor}>
-              <Image source={{ uri }} style={tallerStyles.foto}/>
-              <TouchableOpacity style={tallerStyles.fotoBorrar} onPress={() => setFotos((anteriores) => anteriores.filter((foto) => foto !== uri))}>
-                <Text style={{ color: '#FF6B00', fontSize: 22 }}>✕</Text>
+      {/* DESCRIPCIÓN */}
+        <View style={tallerStyles.campoContainer}>
+          <Text style={tallerStyles.etiqueta}>Descripción</Text>
+          <TextInput
+            style={[tallerStyles.campo, { minHeight: 100, textAlignVertical: 'top' }]}
+            placeholder="Medidas, materiales, plazos..."
+            placeholderTextColor={ThemeColors.textoGris}
+            value={descripcion}
+            onChangeText={setDescripcion}
+            multiline
+          />
+        </View>
+
+        <Text style={tallerStyles.especialidadesTitulo}>Categoría</Text>
+        <View style={tallerStyles.especialidadesGrilla}>
+          {especialidades.map((especialidad) => {
+            const activa = categoria === especialidad;
+            return (
+              <TouchableOpacity
+                key={especialidad}
+                style={[tallerStyles.especialidadBtn, activa && tallerStyles.especialidadBtnActiva]}
+                onPress={() => setCategoria(especialidad)}
+              >
+                <Text style={[tallerStyles.especialidadTexto, activa && tallerStyles.especialidadTextoActiva]}>
+                  {especialidad}
+                </Text>
               </TouchableOpacity>
+            );
+          })}
         </View>
-          ))}
-        </View>
-      )}
+
+        <Text style={tallerStyles.portafolioTitulo}>Fotografías del trabajo (opcional)</Text>
+        <TouchableOpacity style={tallerStyles.portafolioArea} onPress={seleccionarFotos}>
+          <Text style={tallerStyles.portafolioTexto}>📸 Agregar fotografías</Text>
+          <Text style={tallerStyles.portafolioSubtexto}>Máximo 5 imágenes (JPG, PNG o WebP)</Text>
+        </TouchableOpacity>
+
+        {fotos.length > 0 && (
+          <View style={tallerStyles.fotosGrilla}>
+            {fotos.map((uri) => (
+              <View key={uri} style={tallerStyles.fotoContenedor}>
+                <Image source={{ uri }} style={tallerStyles.foto}/>
+                <TouchableOpacity style={tallerStyles.fotoBorrar} onPress={() => setFotos((anteriores) => anteriores.filter((foto) => foto !== uri))}>
+                  <Text style={{ color: '#FF6B00', fontSize: 22 }}>✕</Text>
+                </TouchableOpacity>
+          </View>
+            ))}
+          </View>
+        )}
 
       
         
 
-      {error ? (
-        <Text style={{ color: 'red', textAlign: 'center', marginBottom: 8 }}>{error}</Text>
-      ) : null}
+        {error ? (
+          <Text style={{ color: 'red', textAlign: 'center', marginBottom: 8 }}>{error}</Text>
+        ) : null}
 
-      <TouchableOpacity style={tallerStyles.btnRegistrar} onPress={handlePublicar} disabled={cargando}>
-        <Text style={tallerStyles.btnRegistrarTexto}>
-          {cargando ? 'Publicando...' : 'Publicar Trabajo'}
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={tallerStyles.btnRegistrar} onPress={handlePublicar} disabled={cargando}>
+          <Text style={tallerStyles.btnRegistrarTexto}>
+            {cargando ? 'Publicando...' : 'Publicar Trabajo'}
+          </Text>
+        </TouchableOpacity>
 
-    </ScrollView>
-  );
-}
+      </ScrollView>
+    );
+  }

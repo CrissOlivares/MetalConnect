@@ -176,6 +176,24 @@ export const tallerStyles = StyleSheet.create({
   marginTop: 25,
   },
 
+  pickerContainer: {
+  backgroundColor: '#262626',
+  borderWidth: 1,
+  borderColor: '#333333',
+  borderRadius: 12,
+  overflow: 'hidden',
+  marginTop: 5,
+  },
+
+  picker: {
+  color: '#FFFFFF',
+  backgroundColor: '#262626',
+  height: 55,
+  width: '100%',
+  borderWidth: 0,
+  paddingHorizontal: 10,
+  },
+
 
 
 
