@@ -4,6 +4,8 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { especialidades } from '../constants/especialidades';
+import { especificacionesTrabajo } from '../constants/especificacionesTrabajo';
+import { materiales } from '../constants/materiales';
 import { ThemeColors } from '../constants/theme';
 import { comunasPorRegion, regiones } from '../constants/ubicaciones';
 import { publicarTrabajo } from '../services/trabajos';
@@ -19,6 +21,13 @@ export default function PublicarTrabajoScreen() {
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
   const [fotos, setFotos] = useState<string[]>([]);
+  const [especificaciones, setEspecificaciones] = useState<Record<string, string>>({});
+  const [unidadMedida, setUnidadMedida] = useState('cm');
+
+  const actualizarEspecificacion = (campo: string, valor: string) => {
+    setEspecificaciones((anteriores) => ({...anteriores, [campo]: valor,
+    }));
+  };
 
   const seleccionarFotos= async () => {
     if (fotos.length >= 5) {
@@ -50,7 +59,7 @@ export default function PublicarTrabajoScreen() {
     setCargando(true);
     setError('');
     const ubicacion = `${comuna}, ${region}`;
-    const { error: dbError } = await publicarTrabajo({ titulo, categoria, ubicacion, descripcion }, fotos);
+    const { error: dbError } = await publicarTrabajo({ titulo, categoria, ubicacion, descripcion, especificaciones : {...especificaciones, unidadMedida,},}, fotos);
     setCargando(false);
     if (dbError) {
       setError(dbError.message);
@@ -158,7 +167,7 @@ export default function PublicarTrabajoScreen() {
               <TouchableOpacity
                 key={especialidad}
                 style={[tallerStyles.especialidadBtn, activa && tallerStyles.especialidadBtnActiva]}
-                onPress={() => setCategoria(especialidad)}
+                onPress={() => {setCategoria(especialidad); setEspecificaciones({});}}
               >
                 <Text style={[tallerStyles.especialidadTexto, activa && tallerStyles.especialidadTextoActiva]}>
                   {especialidad}
@@ -167,6 +176,75 @@ export default function PublicarTrabajoScreen() {
             );
           })}
         </View>
+
+        {categoria && (
+          <View style={tallerStyles.campoContainer}>
+            <Text style={[tallerStyles.etiqueta,{ marginBottom: 20 },]} >
+              Especificaciones del trabajo
+            </Text>
+
+            <Text style={tallerStyles.etiqueta}>Unidad de medida</Text>
+
+            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 20 }}>
+              {['mm', 'cm', 'm'].map((unidad) => (
+                <TouchableOpacity
+                  key={unidad}
+                  style={[ 
+                    tallerStyles.materialBoton, 
+                    unidadMedida === unidad && { borderColor: '#FF6B00',
+                      backgroundColor: '#3A2A20',
+                    },
+                  ]}
+                  onPress={() => setUnidadMedida(unidad)}
+                >
+                  <Text style={{ color: '#FFFFFF' }}>{unidad}</Text>
+                </TouchableOpacity>
+              ))}
+
+            </View>
+
+
+
+            {(especificacionesTrabajo[categoria] ?? []).map((campo) => (
+              <View key={campo} style={{ marginBottom: 15 }}>
+                <Text style={tallerStyles.etiqueta}>{campo}</Text>
+
+                {campo === 'Material' ? (
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                    {materiales.map((material) => (
+                      <TouchableOpacity
+                        key={material}
+                        style={[
+                          tallerStyles.materialBoton,
+                          especificaciones[campo] === material && {
+                            borderColor: '#FF6B00',
+                            backgroundColor: '#3A2A20',
+                          },
+                        ]}
+                        onPress={() => actualizarEspecificacion(campo, material)}
+                      >
+                        <Text style={{ color: '#FFFFFF' }}>
+                          {material}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                ) : (
+                  <TextInput
+                    style={tallerStyles.campo}
+                    placeholder={`Ingresa ${campo.toLowerCase()}`}
+                    placeholderTextColor={ThemeColors.textoGris}
+                    value={especificaciones[campo] ?? ''}
+                    onChangeText={(valor) =>
+                      actualizarEspecificacion(campo, valor)
+                    }
+                    keyboardType="decimal-pad"
+                  />
+                )}
+              </View>
+            ))}
+          </View>
+        )}
 
         <Text style={tallerStyles.portafolioTitulo}>Fotografías del trabajo (opcional)</Text>
         <TouchableOpacity style={tallerStyles.portafolioArea} onPress={seleccionarFotos}>

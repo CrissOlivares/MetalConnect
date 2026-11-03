@@ -194,6 +194,15 @@ export const tallerStyles = StyleSheet.create({
   paddingHorizontal: 10,
   },
 
+  materialBoton: {
+  backgroundColor: '#262626',
+  borderWidth: 1,
+  borderColor: '#333333',
+  borderRadius: 10,
+  paddingVertical: 12,
+  paddingHorizontal: 15,
+  },  
+
 
 
 
