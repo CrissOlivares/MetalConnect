@@ -1,13 +1,31 @@
-import { supabase } from './supabase'
+import { supabase } from './supabase';
+
+export type TipoUsuario = 'cliente' | 'taller' | 'independiente';
 
 // Registrar un usuario nuevo
-export const signUp = async (email: string, password: string) => {
+export const signUp = async (
+  email: string,
+  password: string,
+  nombre: string,
+  telefono: string,
+  ciudad: string,
+  tipoUsuario: TipoUsuario
+) => {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-  })
-  return { data, error }
-}
+    options: {
+      data: {
+        name: nombre,
+        phone: telefono,
+        address: ciudad,
+        tipo_usuario: tipoUsuario,
+      },
+    },
+  });
+
+  return { data, error };
+};
 
 // Iniciar sesión
 export const signIn = async (email: string, password: string) => {

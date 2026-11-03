@@ -51,6 +51,7 @@ export default function RootLayout() {
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="registro" options={{ headerShown: false }} />
         <Stack.Screen name="taller" options={{ title: 'MetalConnect' }} />
+        <Stack.Screen name="publicar-trabajo" options={{ title: 'MetalConnect' }} />
         <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
         <Stack.Screen name="reset-password" options={{ headerShown: false }} />
       </Stack>

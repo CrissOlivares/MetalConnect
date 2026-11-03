@@ -1,8 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Alert, Image, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../constants/theme';
+import { supabase } from '../services/supabase';
 import { tallerStyles } from '../styles/tallerStyles';
 
 const especialidades = [
@@ -19,6 +21,14 @@ const especialidades = [
 ];
 
 export default function TallerScreen() {
+
+  const router = useRouter();
+
+  const [usuarioId, setUsuarioId] = useState<string | null>(null);
+  const [verificandoRol, setVerificandoRol] = useState(true);
+  const [accesoPermitido, setAccesoPermitido] = useState(false);
+  const[tallerId, setTallerId] = useState<number | null>(null);
+  const [guardando, setGuardando] = useState(false);
   const [nombre, setNombre] = useState('');
   const [rut, setRut] = useState('');
   const [direccion, setDireccion] = useState('');
@@ -27,6 +37,66 @@ export default function TallerScreen() {
   const [horario, setHorario] = useState('');
   const [seleccionadas, setSeleccionadas] = useState<string[]>([]);
   const [fotos, setFotos] = useState<string[]>([]);
+
+  useEffect(() => {
+    const verificarRol = async () => {
+      try {
+        const { data: authData, error: authError } =
+          await supabase.auth.getUser();
+
+          if(authError || !authData.user) {
+            router.replace('/login');
+            return;
+          }
+
+          const { data: perfil, error } = await supabase
+            .from('profiles')
+            .select('is_taller')
+            .eq('user_id', authData.user.id)
+            .single();
+
+          if (error || !perfil?.is_taller) {
+            setAccesoPermitido(false);
+            return;
+          }
+
+          setUsuarioId(authData.user.id);
+          setAccesoPermitido(true);
+
+        const { data: taller, error: errorTaller } = await supabase
+          .from('talleres')
+          .select('id, nombre, rut, direccion, telefono, whatsapp, horario, especialidades')
+          .eq('user_id', authData.user.id)
+          .maybeSingle();
+
+        if (errorTaller) {
+          throw errorTaller;
+        }
+
+        if (taller){
+          setTallerId(taller.id);
+          setNombre(taller.nombre ?? '');
+          setRut(taller.rut ?? '');
+          setDireccion(taller.direccion ?? '');
+          setTelefono(taller.telefono ?? '');
+          setWhatsapp(taller.whatsapp ?? '');
+          setHorario(taller.horario ?? '');
+          setSeleccionadas(taller.especialidades ?? []);
+        } else {
+          setTallerId(null);
+        }
+
+        } catch (error) {
+          console.error('Error verificando el rol:', error);
+          setAccesoPermitido(false);
+        } finally {
+          setVerificandoRol(false);
+        }
+     };
+
+     verificarRol();
+  }, [router]);
+
 
   const seleccionarFotos = async () => {
     const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -57,15 +127,136 @@ export default function TallerScreen() {
     }
   };
 
-  return (
-    <ScrollView style={tallerStyles.contenedor} showsVerticalScrollIndicator={false}>
+  const registrarTaller = async () => {
+    if (guardando || !accesoPermitido || !usuarioId) return;
 
-      <Text style={tallerStyles.titulo}>Registrar Mi Taller</Text>
+    if (!nombre.trim()) {
+      Alert.alert('Campo obligatorio', 'Ingresa el nombre del taller.');
+      return;
+    }
+  
+
+    if (seleccionadas.length === 0){
+      Alert.alert('Especialidades', 'Selecciona al menos una especialidad');
+      return;
+    }
+
+    try {
+      setGuardando(true);
+
+      const datosTaller = {
+        nombre: nombre.trim(),
+        rut: rut.trim() || null,
+        direccion: direccion.trim() || null,
+        telefono: telefono.trim() || null,
+        whatsapp: whatsapp.trim() || null,
+        horario: horario.trim() || null,
+        especialidades: seleccionadas,   
+      };
+
+      let error;
+
+      if (tallerId !== null) {
+        
+        const resultado = await supabase
+          .from('talleres')
+          .update(datosTaller)
+          .eq('id', tallerId)
+          .eq('user_id', usuarioId)
+          .select('id')
+          .single();
+          error = resultado.error;
+      } else {
+        const resultado = await supabase
+          .from('talleres')
+          .insert({
+            ...datosTaller,
+            user_id: usuarioId,
+          })
+          .select('id')
+          .single();
+          error = resultado.error;
+      }
+
+      if (error) {
+        console.error('Error al guardar taller:', error);
+
+        if(error.code === '23505') {
+          Alert.alert('Taller existente', 'Ya tienes un taller registrado');
+        } else {
+          Alert.alert('Error', 'No se pudo guardar la información del taller.');
+        }
+        return;
+      }
+
+      
+      Alert.alert('¡Éxito', tallerId !== null
+      ? 'Los datos del taller se actualizaron correctamente.'
+      : 'Tu taller se registró correctamente.',
+      [
+        {
+          text: 'Aceptar',
+          onPress: () => router.replace('/(tabs)/perfil'),
+        },
+      ]
+    );
+    } catch (error) {
+      console.error('Error inesperado:', error);
+
+      Alert.alert('Error', 'Ocurrió un problema al guardar el taller.');
+
+    } finally {
+      setGuardando(false);
+    }
+    };
+
+  if (verificandoRol) {
+    return (
+      <View style={tallerStyles.pantallaVerificacion}>
+        <Text style={tallerStyles.textoVerificacion}>
+          Verificando Cuenta...
+        </Text>
+      </View>
+
+    );
+  }
+
+  if (!accesoPermitido) {
+    return (
+      <View style={tallerStyles.pantallaAccesoRestringido}>
+        <Ionicons name= "lock-closed-outline" size={55} color="#FF6B00"/>
+
+        <Text style={tallerStyles.tituloAccesoRestringido}>
+          Acceso restringido
+        </Text>
+
+        <Text style={tallerStyles.textoAccesoRestringido}>
+          Solo los usuarios registrados como Talleres pueden ingresar a esta sección. Si crees que esto es un error, por favor contacta al soporte.
+        </Text>
+
+        <TouchableOpacity style={[tallerStyles.btnRegistrar, tallerStyles.botonVolverPerfil,]}
+          onPress={() => router.replace('/(tabs)/perfil')}
+        >
+          <Text style= {tallerStyles.btnRegistrarTexto}>
+            Volver a mi Perfil 
+          </Text>
+        </TouchableOpacity>
+
+        </View>
+    );
+  }
+
+  return (
+    <ScrollView style={tallerStyles.container} showsVerticalScrollIndicator={false}>
+
+      <Text style={tallerStyles.titulo}>
+        {tallerId !== null ? 'Administrar Mi Taller' : 'Registrar Mi Taller'}
+      </Text>
       <Text style={tallerStyles.subtitulo}>
         Completa la información de tu empresa para recibir solicitudes
       </Text>
 
-      <View style={tallerStyles.campoContenedor}>
+      <View style={tallerStyles.campoContainer}>
         <Text style={tallerStyles.etiqueta}>Nombre del Taller</Text>
         <TextInput
           style={tallerStyles.campo}
@@ -76,7 +267,7 @@ export default function TallerScreen() {
         />
       </View>
 
-      <View style={tallerStyles.campoContenedor}>
+      <View style={tallerStyles.campoContainer}>
         <Text style={tallerStyles.etiqueta}>RUT Empresa</Text>
         <TextInput
           style={tallerStyles.campo}
@@ -87,7 +278,7 @@ export default function TallerScreen() {
         />
       </View>
 
-      <View style={tallerStyles.campoContenedor}>
+      <View style={tallerStyles.campoContainer}>
         <Text style={tallerStyles.etiqueta}>Dirección</Text>
         <TextInput
           style={tallerStyles.campo}
@@ -123,7 +314,7 @@ export default function TallerScreen() {
         </View>
       </View>
 
-      <View style={tallerStyles.campoContenedor}>
+      <View style={tallerStyles.campoContainer}>
         <Text style={tallerStyles.etiqueta}>Horario de Atención</Text>
         <TextInput
           style={tallerStyles.campo}
@@ -175,8 +366,14 @@ export default function TallerScreen() {
         </View>
       )}
 
-      <TouchableOpacity style={tallerStyles.btnRegistrar}>
-        <Text style={tallerStyles.btnRegistrarTexto}>Registrar Taller</Text>
+      <TouchableOpacity style={tallerStyles.btnRegistrar} onPress={registrarTaller} disabled= {guardando}>
+        <Text style={tallerStyles.btnRegistrarTexto}>
+          {guardando
+            ? 'Guardando...'
+            : tallerId !== null
+              ? 'Guardar cambios'
+              : 'Registrar Taller'}
+        </Text>
       </TouchableOpacity>
 
     </ScrollView>

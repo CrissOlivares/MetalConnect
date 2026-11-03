@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { FontSizes, FontWeights, Radius, Spacing, ThemeColors } from '../constants/theme';
 
 export const registroStyles = StyleSheet.create({
-  contenedor: {
+  container: {
     flex: 1,
     backgroundColor: ThemeColors.fondo,
     paddingHorizontal: Spacing.md,
@@ -124,4 +124,165 @@ export const registroStyles = StyleSheet.create({
     fontSize: FontSizes.texto,
     fontWeight: FontWeights.bold,
   },
+
+  contenedorRoles: {
+  marginBottom: 20,
+  },
+
+  tituloRoles: {
+  color: '#FFFFFF',
+  fontSize: 16,
+  fontWeight: '600',
+  marginBottom: 12,
+  },
+
+  opcionRol: {
+  backgroundColor: '#262626',
+  padding: 16,
+  borderRadius: 12,
+  marginBottom: 10,
+  borderWidth: 1,
+  borderColor: '#444444',
+  },
+
+  opcionRolSeleccionada: {
+  backgroundColor: '#FF6B00',
+  borderColor: '#FF6B00',
+  },
+
+  textoOpcionRol: {
+  color: '#FFFFFF',
+  fontSize: 15,
+  fontWeight: '600',
+  },
+
+  avisoRol: {
+  color: '#A1A1AA',
+  fontSize: 12,
+  marginTop: 4,
+  },
+
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 40,
+  },
+
+  telefonoFile: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 10,
+  },
+
+  prefijoContainer: {
+  backgroundColor: '#262626',
+  borderWidth: 1,
+  borderColor: '#444444',
+  borderRadius: 10,
+  paddingHorizontal: 12,
+  height: 52,
+  justifyContent: 'center',
+  },
+
+  prefijoTexto: {
+  color: '#FFFFFF',
+  fontSize: 15,
+  fontWeight: '600',
+  },  
+
+  telefonoInput: {
+  flex: 1,
+  backgroundColor: '#262626',
+  color: '#FFFFFF',
+  borderWidth: 1,
+  borderColor: '#444444',
+  borderRadius: 10,
+  height: 52,
+  paddingHorizontal: 14,
+  fontSize: 15,
+  },
+
+  selectorCampo: {
+    backgroundColor: '#262626',
+    borderWidth: 1,
+    borderColor: '#444444',
+    borderRadius: 10,
+    minHeight: 52,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+
+selectorTexto: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    flex: 1,
+  },
+
+selectorPlaceholder: {
+    color: '#A1A1AA',
+  },
+
+selectorDeshabilitado: {
+    opacity: 0.5,
+  },
+
+
+modalFondo: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+
+modalFondoTouchable: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+
+  modalContenido: {
+    backgroundColor: '#262626',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#444444',
+    maxHeight: '70%',
+    overflow: 'hidden',
+  },
+
+modalEncabezado: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#444444',
+  },
+
+  modalTitulo: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  modalOpcion: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 17,
+    borderBottomWidth: 1,
+    borderBottomColor: '#383838',
+  },
+
+modalOpcionTexto: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    flex: 1,
+  },
+
+  
 });

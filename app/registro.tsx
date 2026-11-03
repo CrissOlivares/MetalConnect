@@ -1,10 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ThemeColors } from '../constants/theme';
+import { comunasPorRegion, regiones } from '../constants/ubicaciones';
 import { signUp } from '../services/auth';
 import { registroStyles } from '../styles/registroStyles';
+
+type TipoUsuario = 'cliente' | 'taller' | 'independiente';
+
 
 export default function RegistroScreen() {
     const router = useRouter();
@@ -13,12 +17,38 @@ export default function RegistroScreen() {
     const [clave, setClave] = useState('')
     const [telefono, setTelefono] = useState('')
     const [ciudad, setCiudad] = useState('')
+    const [region, setRegion] = useState('')
+    const [tipoUsuario, setTipoUsuario] = useState<TipoUsuario>('cliente')
     const [confirmarClave, setConfirmarClave] = useState('')
     const [claveVisible, setClaveVisible] = useState(false)
     const [confirmarClaveVisible, setConfirmarClaveVisible] = useState(false)
     const [error, setError] = useState('')
     const [cargando, setCargando] = useState(false)
+    const [selectorAbierto, setSelectorAbierto] = useState<'region' | 'comuna' | null>(null);
 
+    const opcionesSelector =
+        selectorAbierto === 'region'
+            ? regiones.map((item) => ({
+                label: item.label,
+                value: item.value,
+            }))
+            : (comunasPorRegion[region] ?? []).map((comuna) => ({
+                label: comuna,
+                value: comuna,
+            }));
+    
+    const seleccionarOpcion = (valor: string) => {
+        if (selectorAbierto === 'region') {
+            setRegion(valor);
+            setCiudad('');
+        } else {
+            setCiudad(valor);
+        }
+        setSelectorAbierto(null);
+    }
+
+    
+            
     const handleRegistro = async () => {
         if (!nombre || !correo || !telefono || !ciudad || !clave || !confirmarClave) {
             setError('Por favor completa todos los campos')
@@ -32,9 +62,34 @@ export default function RegistroScreen() {
             setError('La contraseña debe tener al menos 6 caracteres')
             return
         }
+
+        if(!region) {
+            setError('Por favor selecciona tu región');
+            return;
+        }
+
+        if(!/^9\d{8}$/.test(telefono)) {
+            setError('Ingresa un celular chileno válido de 9 dígitos');
+            return;
+        }
+
+
         setCargando(true)
         setError('')
-        const {error: authError } = await signUp(correo, clave)
+
+        const telefonoCompleto = `+56${telefono}`;
+        const ubicacionCompleta = `${ciudad}, ${region}`;
+
+
+
+        const { error: authError } = await signUp(
+        correo.trim(),
+        clave,
+        nombre.trim(),
+        telefonoCompleto,
+        ubicacionCompleta,
+        tipoUsuario
+        );
         if (authError) {
             setError(authError.message)
         } else {
@@ -45,8 +100,15 @@ export default function RegistroScreen() {
 
     return (
         <KeyboardAvoidingView
-            style={registroStyles.contenedor}
+            style={registroStyles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+
+        >
+            <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={registroStyles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
         >
             {/* Logo y título */}
             <View style={registroStyles.logoContainer}>
@@ -89,27 +151,91 @@ export default function RegistroScreen() {
             {/* Teléfono */}
             <View>
                 <Text style={registroStyles.etiquetaCampo}>Teléfono</Text>
-                <TextInput
-                        style={registroStyles.campo}
-                        placeholder="+56 9 1234 5678"
+                
+                <View style={registroStyles.telefonoFile}>
+                    <View style={registroStyles.prefijoContainer}>
+                        <Text style={registroStyles.prefijoTexto}> 🇨🇱 +56
+
+                        </Text>
+                    </View>
+                    <TextInput
+                        style={registroStyles.telefonoInput}
+                        placeholder="9 1234 5678"
                         placeholderTextColor={ThemeColors.textoGris}
-                        value={telefono}
-                        onChangeText={setTelefono}
                         keyboardType="phone-pad"
+                        value={telefono}
+                        onChangeText={(texto) => {
+                            const numeros = texto.replace(/\D/g, '').slice(0, 9);
+                            setTelefono(numeros);
+                        }}
+                        maxLength={9}
+                    />
+                </View>
+            </View>
+                    
+            
+
+            {/* Región */}
+            <View>
+                <Text style={registroStyles.etiquetaCampo}>Región</Text>
+                
+                <TouchableOpacity
+                style={registroStyles.selectorCampo}
+                onPress={() => setSelectorAbierto('region')}
+            >
+
+                <Text
+                    style={[
+                        registroStyles.selectorTexto,
+                        !region && registroStyles.selectorPlaceholder,
+
+                    ]}
+                >
+                    {regiones.find((item) => item.value === region)?.label ||
+                        'Selecciona tu región'}
+                </Text>
+
+                <Ionicons
+                    name="chevron-down"
+                    size={20}
+                    color="#FF6B00"
                 />
+                </TouchableOpacity>
             </View>
 
-            {/* Ciudad */}
+
+            {/* comuna */}
+
             <View>
-                <Text style={registroStyles.etiquetaCampo}>Ciudad</Text>
-                <TextInput
-                        style={registroStyles.campo}
-                        placeholder="Santiago"
-                        placeholderTextColor={ThemeColors.textoGris}
-                        value={ciudad}
-                        onChangeText={setCiudad}
-                        autoCapitalize="words"
-                />
+                <Text style={registroStyles.etiquetaCampo}>Comuna</Text>
+               
+                <TouchableOpacity
+                    style={[
+                        registroStyles.selectorCampo,
+                        !region && registroStyles.selectorDeshabilitado,
+                    ]}
+                    disabled={!region}
+                    onPress={() => setSelectorAbierto('comuna')}
+                >
+                    <Text
+                        style={[
+                            registroStyles.selectorTexto,
+                            !ciudad &&registroStyles.selectorPlaceholder,
+                            !region && registroStyles.selectorDeshabilitado,
+                        ]}
+                    >
+                        {ciudad ||
+                            (region
+                                ? 'Selecciona tu comuna'
+                                : 'Selecciona primero tu región')}
+                    </Text>
+                    <Ionicons
+                        name="chevron-down"
+                        size={20}
+                        color="#FF6B00"
+                    />
+                </TouchableOpacity>
+
             </View>
 
             {/* Contraseña */}
@@ -157,6 +283,38 @@ export default function RegistroScreen() {
                 </View>
             </View>
 
+            {/* Tipo de usuario */}
+
+            <View style={registroStyles.contenedorRoles}>
+                <Text style={registroStyles.tituloRoles}>
+                    ¿Qué tipo de cuenta deseas crear?
+                </Text>
+
+                {([
+                    { valor: 'cliente', texto: '👤 Cliente' },
+                    { valor: 'taller', texto: '🏭 Taller' },
+                    { valor: 'independiente', texto: '🔧 Trabajador independiente' },
+                ] as const).map((opcion) => (
+                    <TouchableOpacity
+                        key={opcion.valor}
+                        onPress={() => setTipoUsuario(opcion.valor)}
+                        style={[
+                            registroStyles.opcionRol,
+                            tipoUsuario === opcion.valor &&
+                                registroStyles.opcionRolSeleccionada,
+                    ]}
+             >
+                    <Text style={registroStyles.textoOpcionRol}>
+                        {opcion.texto}
+                    </Text>
+                </TouchableOpacity>
+            ))}
+
+            <Text style={registroStyles.avisoRol}>
+                El tipo de cuenta no podrá cambiarse después del registro.
+            </Text>
+        </View>
+
             {/* Error */}
             {error ? (
                 <Text style={{ color: 'red', textAlign: 'center', marginTop: 8 }}>{error}</Text>
@@ -194,6 +352,62 @@ export default function RegistroScreen() {
                     <Text style={registroStyles.loginEnlace}>Inicia sesión</Text>
                 </TouchableOpacity>
             </View>
+
+             </ScrollView>
+
+             <Modal
+                 visible={selectorAbierto !== null}
+                 transparent
+                 animationType="fade"
+                 onRequestClose={() => setSelectorAbierto(null)}
+                >
+                <View style={registroStyles.modalFondo}>
+                    <Pressable
+                        style={registroStyles.modalFondoTouchable}
+                        onPress={() => setSelectorAbierto(null)}
+                    />
+
+                    <View style={registroStyles.modalContenido}>
+                        <View style={registroStyles.modalEncabezado}>
+                            <Text style={registroStyles.modalTitulo}>
+                                {selectorAbierto === 'region'
+                                    ? 'Selecciona tu región'
+                                    : 'Selecciona tu comuna'}
+                            </Text>
+
+                            <TouchableOpacity
+                                onPress={() => setSelectorAbierto(null)}
+                            >
+                                <Ionicons name="close" size={24} color="#FFFFFF" />
+                            </TouchableOpacity>
+
+                        </View>
+
+                            <FlatList
+                                data={opcionesSelector}
+                                keyExtractor={(item) => item.value}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        style={registroStyles.modalOpcion}
+                                        onPress={() => seleccionarOpcion(item.value)}
+                                    >
+                                        <Text style={registroStyles.modalOpcionTexto}>
+                                            {item.label}
+                                        </Text>
+                                        <Ionicons
+                                            name="chevron-forward"
+                                            size={18}
+                                            color="#FF6B00"
+                                        />
+                                    </TouchableOpacity>
+                                )}
+                            />
+
+
+        
+                        </View>
+                    </View>
+                </Modal>
 
         </KeyboardAvoidingView>
   );

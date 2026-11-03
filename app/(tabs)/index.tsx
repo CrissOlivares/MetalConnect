@@ -61,14 +61,6 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      {/* Cerrar sesión */}
-      <TouchableOpacity
-        onPress={handleSignOut}
-        style={{ marginTop: 20, flexDirection: 'row', alignItems: 'center', gap: 8 }}
-      >
-        <Ionicons name="log-out-outline" size={20} color="#FF6B00" />
-        <Text style={{ color: '#FF6B00', fontSize: 14 }}>Cerrar sesión</Text>
-      </TouchableOpacity>
 
     </View>
   );
