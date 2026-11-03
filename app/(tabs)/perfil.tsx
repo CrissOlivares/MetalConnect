@@ -521,23 +521,23 @@ export default function PerfilScreen() {
       </View>
 
       {/* registro de taller: usuarios con el rol de taller */}
-      {esTaller && !tallerRegistrado && (
+      {esTaller && (
         <TouchableOpacity
           style={styles.botonRegistrarTaller}
           onPress={() => router.push('/taller')}
         >
-          <Ionicons name="business-outline" size={20} color="#FFFFFF"/>
+          <Ionicons name={tallerRegistrado ? 'settings-outline' : 'business-outline'} 
+          size={20} color="#FFFFFF"/>
+
           <Text style={styles.textoBoton}>
-            Registrar mi taller
+            {tallerRegistrado            
+              ? 'Administrar mi taller'
+              : 'Registrar mi taller'      
+            }            
           </Text>
         </TouchableOpacity>
       )}
     
-
-
-
-
-
       {/* información de cuenta */}
       <View style={styles.tarjeta}>
         <Text style={styles.subtitulo}>

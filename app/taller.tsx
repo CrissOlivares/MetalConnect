@@ -27,7 +27,8 @@ export default function TallerScreen() {
   const [usuarioId, setUsuarioId] = useState<string | null>(null);
   const [verificandoRol, setVerificandoRol] = useState(true);
   const [accesoPermitido, setAccesoPermitido] = useState(false);
-
+  const[tallerId, setTallerId] = useState<number | null>(null);
+  const [guardando, setGuardando] = useState(false);
   const [nombre, setNombre] = useState('');
   const [rut, setRut] = useState('');
   const [direccion, setDireccion] = useState('');
@@ -61,6 +62,30 @@ export default function TallerScreen() {
 
           setUsuarioId(authData.user.id);
           setAccesoPermitido(true);
+
+        const { data: taller, error: errorTaller } = await supabase
+          .from('talleres')
+          .select('id, nombre, rut, direccion, telefono, whatsapp, horario, especialidades')
+          .eq('user_id', authData.user.id)
+          .maybeSingle();
+
+        if (errorTaller) {
+          throw errorTaller;
+        }
+
+        if (taller){
+          setTallerId(taller.id);
+          setNombre(taller.nombre ?? '');
+          setRut(taller.rut ?? '');
+          setDireccion(taller.direccion ?? '');
+          setTelefono(taller.telefono ?? '');
+          setWhatsapp(taller.whatsapp ?? '');
+          setHorario(taller.horario ?? '');
+          setSeleccionadas(taller.especialidades ?? []);
+        } else {
+          setTallerId(null);
+        }
+
         } catch (error) {
           console.error('Error verificando el rol:', error);
           setAccesoPermitido(false);
@@ -71,8 +96,6 @@ export default function TallerScreen() {
 
      verificarRol();
   }, [router]);
-
-
 
 
   const seleccionarFotos = async () => {
@@ -105,10 +128,13 @@ export default function TallerScreen() {
   };
 
   const registrarTaller = async () => {
+    if (guardando || !accesoPermitido || !usuarioId) return;
+
     if (!nombre.trim()) {
-      Alert.alert('Campo Obligatorio', 'Ingresa el nombre del taller.');
+      Alert.alert('Campo obligatorio', 'Ingresa el nombre del taller.');
       return;
     }
+  
 
     if (seleccionadas.length === 0){
       Alert.alert('Especialidades', 'Selecciona al menos una especialidad');
@@ -116,64 +142,73 @@ export default function TallerScreen() {
     }
 
     try {
-      const { data: authData, error: authError} =
-        await supabase.auth.getUser();
+      setGuardando(true);
 
-      
-      if (authError || !authData.user) {
-        Alert.alert('Error', 'Debes iniciar sesión para registrar un taller.');
+      const datosTaller = {
+        nombre: nombre.trim(),
+        rut: rut.trim() || null,
+        direccion: direccion.trim() || null,
+        telefono: telefono.trim() || null,
+        whatsapp: whatsapp.trim() || null,
+        horario: horario.trim() || null,
+        especialidades: seleccionadas,   
+      };
+
+      let error;
+
+      if (tallerId !== null) {
+        
+        const resultado = await supabase
+          .from('talleres')
+          .update(datosTaller)
+          .eq('id', tallerId)
+          .eq('user_id', usuarioId)
+          .select('id')
+          .single();
+          error = resultado.error;
+      } else {
+        const resultado = await supabase
+          .from('talleres')
+          .insert({
+            ...datosTaller,
+            user_id: usuarioId,
+          })
+          .select('id')
+          .single();
+          error = resultado.error;
+      }
+
+      if (error) {
+        console.error('Error al guardar taller:', error);
+
+        if(error.code === '23505') {
+          Alert.alert('Taller existente', 'Ya tienes un taller registrado');
+        } else {
+          Alert.alert('Error', 'No se pudo guardar la información del taller.');
+        }
         return;
       }
 
-      // guardar taller en base de datos
-
-      const { error } = await supabase
-        .from('talleres')
-        .insert({
-          user_id: authData.user.id,
-          nombre: nombre.trim(),
-          rut: rut.trim() || null,
-          direccion: direccion.trim() || null,
-          telefono: telefono.trim() || null,
-          whatsapp: whatsapp.trim() || null,
-          horario: horario.trim() || null,
-          especialidades: seleccionadas,
-        });
       
-        if (error) {
-          console.error('Error al registrar el taller:', error);
-
-          if (error.code === '23505') {
-            Alert.alert('Taller existente', 'Ya tienes un taller registrado');
-          
-          } else {
-            Alert.alert('Error', 'No se pudo registrar el taller. Intente de nuevo.');
-          }
-
-          return;
-        }
-
-        Alert.alert('¡Registro exitoso!', 'Tu taller se ha registrado correctamente',
-          [
-            {
-              text: 'Aceptar',
-              onPress: () => router.replace('/(tabs)/perfil'),
-            },
-          ]
-        );
-    
+      Alert.alert('¡Éxito', tallerId !== null
+      ? 'Los datos del taller se actualizaron correctamente.'
+      : 'Tu taller se registró correctamente.',
+      [
+        {
+          text: 'Aceptar',
+          onPress: () => router.replace('/(tabs)/perfil'),
+        },
+      ]
+    );
     } catch (error) {
       console.error('Error inesperado:', error);
 
-      Alert.alert('Error', 'Ocurrió un problema al registrar el taller');
+      Alert.alert('Error', 'Ocurrió un problema al guardar el taller.');
+
+    } finally {
+      setGuardando(false);
     }
-  };
-
-
-
-
-
-
+    };
 
   if (verificandoRol) {
     return (
@@ -214,7 +249,9 @@ export default function TallerScreen() {
   return (
     <ScrollView style={tallerStyles.container} showsVerticalScrollIndicator={false}>
 
-      <Text style={tallerStyles.titulo}>Registrar Mi Taller</Text>
+      <Text style={tallerStyles.titulo}>
+        {tallerId !== null ? 'Administrar Mi Taller' : 'Registrar Mi Taller'}
+      </Text>
       <Text style={tallerStyles.subtitulo}>
         Completa la información de tu empresa para recibir solicitudes
       </Text>
@@ -329,9 +366,13 @@ export default function TallerScreen() {
         </View>
       )}
 
-      <TouchableOpacity style={tallerStyles.btnRegistrar} onPress={registrarTaller}>
+      <TouchableOpacity style={tallerStyles.btnRegistrar} onPress={registrarTaller} disabled= {guardando}>
         <Text style={tallerStyles.btnRegistrarTexto}>
-          Registrar Taller
+          {guardando
+            ? 'Guardando...'
+            : tallerId !== null
+              ? 'Guardar cambios'
+              : 'Registrar Taller'}
         </Text>
       </TouchableOpacity>
 
