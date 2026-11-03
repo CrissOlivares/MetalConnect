@@ -11,6 +11,7 @@ export type Trabajo = {
   created_at: string
   fotos: string []
   ofertas: number
+  especificaciones: Record<string, string>
 }
 
 export type NuevoTrabajo = {
@@ -18,6 +19,7 @@ export type NuevoTrabajo = {
   categoria: string
   ubicacion: string
   descripcion: string
+  especificaciones: Record<string, string>;
 }
 
 export const subirFotosTrabajo = async (
@@ -162,4 +164,14 @@ export const publicarTrabajo = async (
         : new Error('No se pudo publicar el trabajo.'),
     };
   }
+};
+
+export const obtenerDetalleTrabajo = async (trabajoId: number) => {
+  const { data, error } = await supabase
+    .from('trabajos')
+    .select('*')
+    .eq('id', trabajoId)
+    .single();
+
+  return { data: data as Trabajo | null, error };
 };

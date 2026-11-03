@@ -2,10 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { clienteStyles } from '../styles/clienteStyles';
 import { ThemeColors } from '../constants/theme';
 import { useAuth } from '../hooks/useAuth';
 import { obtenerMisTrabajos, Trabajo } from '../services/trabajos';
+import { clienteStyles } from '../styles/clienteStyles';
 
 export default function ClienteScreen() {
   const router = useRouter();
@@ -99,7 +99,14 @@ export default function ClienteScreen() {
         <Text style={clienteStyles.textoMensaje}>Aún no has publicado trabajos</Text>
       )}
       {trabajos.map((trabajo) => (
-        <TouchableOpacity key={trabajo.id} style={clienteStyles.tarjetaTrabajo}>
+        <TouchableOpacity
+          key={trabajo.id}
+          style={clienteStyles.tarjetaTrabajo}
+          onPress={() =>{
+            console.log('Trabajo seleccionado:', trabajo.id);
+            router.push(`/detalle-trabajo/${trabajo.id}` as any)
+          }}
+        >
           <View style={clienteStyles.trabajoCabecera}>
             <Text style={clienteStyles.trabajoTitulo}>{trabajo.titulo}</Text>
             <View style={clienteStyles.etiqueta}>
