@@ -175,3 +175,23 @@ export const obtenerDetalleTrabajo = async (trabajoId: number) => {
 
   return { data: data as Trabajo | null, error };
 };
+
+export const obtenerTrabajosDisponibles = async () => {
+  const { data, error } = await supabase
+    .from('trabajos')
+    .select(`
+      id,
+      titulo,
+      categoria,
+      ubicacion,
+      descripcion,
+      estado,
+      created_at,
+      fotos,
+      especificaciones
+    `)
+    .eq('estado', 'Abierto')
+    .order('created_at', { ascending: false });
+  
+  return { data, error };
+};

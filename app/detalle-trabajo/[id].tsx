@@ -1,11 +1,11 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { obtenerDetalleTrabajo, Trabajo } from '../../services/trabajos';
 
@@ -58,6 +58,16 @@ export default function DetalleTrabajoScreen() {
   }
 
   return (
+    <>
+      <Stack.Screen
+        options={{
+          title: 'Detalle del trabajo',
+          headerStyle: {
+            backgroundColor: '#181818',
+          },
+          headerTintColor: '#FFFFFF',
+        }}
+    />
     <ScrollView
       style={{ flex: 1, backgroundColor: '#181818' }}
       contentContainerStyle={{ padding: 20, paddingTop: 50, paddingBottom: 40 }}
@@ -114,5 +124,6 @@ export default function DetalleTrabajoScreen() {
         Publicado el {new Date(trabajo.created_at).toLocaleDateString('es-CL')}
       </Text>
     </ScrollView>
+    </>
   );
 }
