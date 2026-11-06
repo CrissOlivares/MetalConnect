@@ -7,6 +7,7 @@ import 'react-native-reanimated'
 
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useAuth } from '@/hooks/useAuth'
+import ChatBot from '@/components/ChatBot'
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -56,6 +57,7 @@ export default function RootLayout() {
         <Stack.Screen name="reset-password" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
+      {user && <ChatBot />}
     </ThemeProvider>
   )
 }

@@ -26,6 +26,15 @@ export default function HomeScreen() {
   return (
     <View style={homeStyles.container}>
 
+      {/* Botón logout arriba a la derecha */}
+      <TouchableOpacity
+        onPress={handleSignOut}
+        style={{ position: 'absolute', top: 16, right: 16, zIndex: 10, flexDirection: 'row', alignItems: 'center', gap: 4 }}
+      >
+        <Ionicons name="log-out-outline" size={22} color="#ff6b35" />
+        <Text style={{ color: '#ff6b35', fontSize: 14 }}>Salir</Text>
+      </TouchableOpacity>
+
       {/* Ícono superior */}
       <View style={homeStyles.iconContainer}>
         <Ionicons name="construct" size={40} color="white" />
@@ -60,7 +69,6 @@ export default function HomeScreen() {
           Publica tu trabajo y recibe múltiples presupuestos de talleres verificados
         </Text>
       </View>
-
 
     </View>
   );
