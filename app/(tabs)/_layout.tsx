@@ -41,7 +41,7 @@ screenOptions={{
             <Ionicons
               name="home-outline"
               size={size}
-              color={color}
+              color={typeof color === 'string' ? color : '#A1A1AA'}
             />
           ),
         }}
@@ -55,7 +55,7 @@ screenOptions={{
             <Ionicons
               name="construct-outline"
               size={size}
-              color={color}
+              color={typeof color === 'string' ? color : '#A1A1AA'}
             />
           ),
         }}
@@ -69,7 +69,7 @@ screenOptions={{
             <Ionicons
               name="person-outline"
               size={size}
-              color={color}
+              color={typeof color === 'string' ? color : '#A1A1AA'}
             />
           ),
         }}

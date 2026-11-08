@@ -2,16 +2,20 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { enviarOferta } from '../../services/ofertas';
 import { obtenerPresupuestoIA } from '../../services/presupuestosIA';
 import { supabase } from '../../services/supabase';
 import { obtenerDetalleTrabajo, Trabajo } from '../../services/trabajos';
 import { trabajosStyles as styles } from '../../styles/trabajosStyles';
-
 
 
 
@@ -52,6 +56,10 @@ export default function DetalleTrabajoScreen() {
   const [error, setError] = useState('');
   const [presupuestoIA, setPresupeustoIA] = useState<any>(null);
   const [esPropietario, setEsPropietario] = useState(false);
+  const [tallerId, setTallerId] = useState<number | null>(null);
+  const [precioOferta, setPrecioOferta] = useState('');
+  const [mensajeOferta, setMensajeOferta] = useState('');
+  const [enviandoOferta, setEnviandoOferta] = useState(false);
   const [cargandoPresupuesto, setCargandoPresupuesto] = useState(true);
 
   useEffect(() => {
@@ -78,6 +86,23 @@ export default function DetalleTrabajoScreen() {
         
         setEsPropietario(propietario);
 
+      if (authData.user && !propietario) {
+        const { data: taller, error: errorTaller } = await supabase
+          .from('talleres')
+          .select('id')
+          .eq('user_id', authData.user.id)
+          .maybeSingle();
+
+        if (errorTaller) {
+          console.warn(
+            'No se pudo consultar el taller:',
+            errorTaller.message
+          );
+        } else {
+          setTallerId(taller?.id ?? null);
+        }
+      }
+
         // solo si es el propietario se calcula el presupuesto
 
         if (propietario) {
@@ -101,6 +126,53 @@ export default function DetalleTrabajoScreen() {
 
     cargarTrabajo();
   }, [id]);
+
+  
+    const manejarEnviarOferta = async () => {
+      if (enviandoOferta) return;
+
+      if (tallerId === null || !trabajo || esPropietario) {
+        Alert.alert('Error', 'No tienes permiso para enviar esta oferta.');
+        return;
+      }
+
+      const precio = Number(precioOferta.trim());
+
+      if (!Number.isSafeInteger(precio) || precio <= 0) {
+        Alert.alert('Precio inválido', 'Ingresa un precio válido en pesos chilenos.');
+        return;
+      }
+
+      if (!mensajeOferta.trim()) {
+        Alert.alert('Mensaje requerido', 'Escribe un mensaje para el cliente.');
+        return;
+      }
+
+      try {
+        setEnviandoOferta(true);
+
+        await enviarOferta({
+          trabajoId: Number(id),
+          tallerId,
+          precio,
+          mensaje: mensajeOferta,
+        });
+
+        Alert.alert('Oferta enviada', 'Tu cotización fue enviada correctamente.');
+
+        setPrecioOferta('');
+        setMensajeOferta('');
+      } catch (error) {
+        const mensaje =
+          error instanceof Error
+            ? error.message
+            : 'No se pudo enviar la oferta.';
+
+        Alert.alert('Error al enviar oferta', mensaje);
+      } finally {
+        setEnviandoOferta(false);
+      }
+    };
 
   if (cargando) {
     return (
@@ -131,10 +203,17 @@ export default function DetalleTrabajoScreen() {
           headerTintColor: '#FFFFFF',
         }}
     />
-    <ScrollView
-      style={{ flex: 1, backgroundColor: '#181818' }}
-      contentContainerStyle={{ padding: 20, paddingTop: 50, paddingBottom: 40 }}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <ScrollView
+        style={{ flex: 1, backgroundColor: '#181818' }}
+        contentContainerStyle={{ padding: 20, paddingTop: 50, paddingBottom: 40 }}
+        automaticallyAdjustKeyboardInsets={true}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
       <TouchableOpacity onPress={() => router.back()}>
         <Text style={{ color: '#FF6B00', marginBottom: 20 }}>
           ← Volver
@@ -264,7 +343,58 @@ export default function DetalleTrabajoScreen() {
 
       </View>
     )}
+
+    
+    {tallerId !== null && !esPropietario && trabajo.estado === 'Abierto' && (
+      <View style={styles.formularioOferta}>
+        <Text style={styles.tituloOferta}>
+          Enviar oferta
+        </Text>
+
+        <Text style={styles.descripcionOferta}>
+          Envía tu cotización al cliente para este trabajo.
+        </Text>
+
+        <Text style={styles.etiquetaOferta}>
+          Precio de tu oferta (CLP)
+        </Text>
+
+        <TextInput
+          style={styles.inputOferta}
+          placeholder="Ej: 150000"
+          placeholderTextColor="#A1A1AA"
+          keyboardType="numeric"
+          value={precioOferta}
+          onChangeText={setPrecioOferta}
+        />
+
+        <Text style={styles.etiquetaOferta}>
+          Mensaje para el cliente
+        </Text>
+
+        <TextInput
+          style={[styles.inputOferta, styles.inputMensajeOferta]}
+          placeholder="Describe tu propuesta, materiales y plazo estimado..."
+          placeholderTextColor="#A1A1AA"
+          multiline
+          value={mensajeOferta}
+          onChangeText={setMensajeOferta}
+        />
+
+        <TouchableOpacity
+          style={styles.botonEnviarOferta}
+          onPress={manejarEnviarOferta}
+          disabled={enviandoOferta}
+        >
+          <Text style={styles.textoBotonOferta}>
+            {enviandoOferta ? 'Enviando...' : 'Enviar oferta'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    )}
+
     </ScrollView>
+    </KeyboardAvoidingView>
     </>   
   );
 }

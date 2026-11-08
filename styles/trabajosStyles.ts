@@ -110,4 +110,59 @@ export const trabajosStyles = StyleSheet.create({
     marginTop: 8,
   },
 
+
+  formularioOferta: {
+    backgroundColor: '#262626',
+    borderRadius: 12,
+    padding: 20,
+    marginTop: 30,
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+
+  tituloOferta: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+
+  descripcionOferta: {
+    color: '#A1A1AA',
+    marginBottom: 20,
+  },
+
+  etiquetaOferta: {
+    color: '#FFFFFF',
+    marginBottom: 8,
+  },
+
+  inputOferta: {
+    backgroundColor: '#181818',
+    color: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#333333',
+    borderRadius: 8,
+    padding: 14,
+    marginBottom: 20,
+  },
+
+  inputMensajeOferta: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
+
+  botonEnviarOferta: {
+    backgroundColor: '#FF6B00',
+    padding: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+
+  textoBotonOferta: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+
+
 });
