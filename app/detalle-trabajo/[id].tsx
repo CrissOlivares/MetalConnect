@@ -7,7 +7,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { obtenerPresupuestoIA } from '../../services/presupuestosIA';
+import { supabase } from '../../services/supabase';
 import { obtenerDetalleTrabajo, Trabajo } from '../../services/trabajos';
+import { trabajosStyles as styles } from '../../styles/trabajosStyles';
 
 export default function DetalleTrabajoScreen() {
   const router = useRouter();
@@ -16,6 +19,9 @@ export default function DetalleTrabajoScreen() {
   const [trabajo, setTrabajo] = useState<Trabajo | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
+  const [presupuestoIA, setPresupeustoIA] = useState<any>(null);
+  const [esPropietario, setEsPropietario] = useState(false);
+  const [cargandoPresupuesto, setCargandoPresupuesto] = useState(true);
 
   useEffect(() => {
     const cargarTrabajo = async () => {
@@ -31,8 +37,34 @@ export default function DetalleTrabajoScreen() {
         setError(error.message);
       } else {
         setTrabajo(data);
+
+        // se comprueba si el trabajo pertenece al usuario
+        const { data: authData } = await supabase.auth.getUser();
+
+        const propietario =
+          !!authData.user &&
+          authData.user.id === (data as Trabajo & {user_id : string })?.user_id;
+        
+        setEsPropietario(propietario);
+
+        // solo si es el propietario se calcula el presupuesto
+
+        if (propietario) {
+          const { data: presupuesto, error: errorPresupuesto } =
+            await obtenerPresupuestoIA(Number(id));
+
+          if (errorPresupuesto) {
+            console.warn(
+              'No se pudo consultar el presupuesto IA:',
+              errorPresupuesto.message
+            );
+          } else {
+            setPresupeustoIA(presupuesto);
+          }
+        }
       }
 
+      setCargandoPresupuesto(false);
       setCargando(false);
     };
 
@@ -123,7 +155,63 @@ export default function DetalleTrabajoScreen() {
       <Text style={{ color: '#A1A1AA', marginTop: 30 }}>
         Publicado el {new Date(trabajo.created_at).toLocaleDateString('es-CL')}
       </Text>
+    
+    {esPropietario && presupuestoIA && (
+      <View style={styles.tarjetaPresupuesto}>
+        <Text style={styles.tituloPresupuesto}>
+          ✨ Presupuesto estimado por IA
+        </Text>
+
+        <Text style={styles.montoTotal}>
+          ${Number(presupuestoIA.costo_total).toLocaleString('es-CL')} CLP
+        </Text>
+
+      <View style={styles.filaCosto}>
+        <Text style={styles.textoCosto}>Materiales</Text>
+        <Text style={styles.valorCosto}>
+          ${Number(presupuestoIA.costo_materiales).toLocaleString('es-CL')}
+          </Text>
+      </View>
+
+      <View style={styles.filaCosto}>
+        <Text style={styles.textoCosto}>Mano de obra</Text>
+        <Text style={styles.valorCosto}>
+          ${Number(presupuestoIA.costo_mano_obra).toLocaleString('es-CL')}
+        </Text>
+      </View>
+
+      <View style={styles.filaCosto}>
+        <Text style={styles.textoCosto}>Otros costos</Text>
+        <Text style={styles.valorCosto}>
+          ${Number(presupuestoIA.otros_costos).toLocaleString('es-CL')}
+        </Text>
+      </View>
+
+      <Text style={styles.tituloSeccionPresupuesto}>
+        ⏱ Tiempo estimado
+      </Text>
+
+      <Text style={styles.textoPresupuesto}>
+        {presupuestoIA.tiempo_estimado}
+      </Text>
+
+      <Text style={styles.tituloSeccionPresupuesto}>
+        Explicación de la estimación
+      </Text>
+
+      <Text style={styles.textoPresupuesto}>
+        {presupuestoIA.explicacion}
+      </Text>
+
+      <Text style={styles.textoAvisoIA}>
+        Este presupuesto es una estimación orientativa generada
+        por inteligencia artificial. El precio final dependerá
+        de las cotizaciones de los talleres.
+      </Text>
+
+      </View>
+    )}
     </ScrollView>
-    </>
+    </>   
   );
 }

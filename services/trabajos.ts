@@ -1,5 +1,6 @@
-import { File } from 'expo-file-system'
-import { supabase } from './supabase'
+import { File } from 'expo-file-system';
+import { generarPresupuestoIA } from './presupuestosIA';
+import { supabase } from './supabase';
 
 export type Trabajo = {
   id: number
@@ -140,11 +141,26 @@ export const publicarTrabajo = async (
       .select()
       .single();
 
-    if (error) {
-      throw error;
+    if (error) throw error;
+
+    try {
+      const resultadoIA = await generarPresupuestoIA(data.id);
+
+      if (resultadoIA.error) {
+        console.warn(
+          'El trabajo fue publicado, pero no se generó el presupuesto con IA.',
+          resultadoIA.error
+        );
+      }
+    } catch (errorIA) {
+      console.warn(
+        'El trabajo se publicó, pero falló la generacion del presupuesto con IA,',
+        errorIA
+      );
     }
 
-    return { data, error: null };
+    return {data, error:null};
+
   } catch (error) {
     // Eliminar imágenes subidas si falla la publicación.
     if (rutas.length > 0) {

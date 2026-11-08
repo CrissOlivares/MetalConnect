@@ -52,4 +52,62 @@ export const trabajosStyles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 16,
   },
+
+  // PRESUPUESTO GENERADO POR IA
+
+  tarjetaPresupuesto: {
+    backgroundColor: '#262626',
+    borderRadius: 16,
+    padding: 20,
+    marginTop: 30,
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+
+  tituloPresupuesto: {
+    color: '#FF6B00',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    },
+
+  montoTotal: {
+    color: '#FF6B00',
+    fontSize: 30,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+
+  filaCosto: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+
+  textoCosto: {
+    color: '#D4D4D8',
+  },
+
+  valorCosto: {
+    color: '#FFFFFF',
+  },
+
+  textoAvisoIA: {
+    color: '#A1A1AA',
+    fontSize: 12,
+    marginTop: 20,
+    lineHeight: 18,
+  },
+
+  tituloSeccionPresupuesto: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    marginTop: 20,
+  },
+
+  textoPresupuesto: {
+    color: '#D4D4D8',
+    marginTop: 8,
+  },
+
 });
