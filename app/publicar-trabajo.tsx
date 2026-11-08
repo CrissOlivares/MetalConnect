@@ -59,7 +59,7 @@ export default function PublicarTrabajoScreen() {
     setCargando(true);
     setError('');
     const ubicacion = `${comuna}, ${region}`;
-    const { error: dbError } = await publicarTrabajo({ titulo, categoria, ubicacion, descripcion, especificaciones : {...especificaciones, unidadMedida,},}, fotos);
+    const { error: dbError } = await publicarTrabajo({ titulo, categoria, ubicacion, descripcion, especificaciones : {...especificaciones, unidadMedida,}}, fotos);
     setCargando(false);
     if (dbError) {
       setError(dbError.message);
@@ -177,7 +177,7 @@ export default function PublicarTrabajoScreen() {
           })}
         </View>
 
-        {categoria && (
+        {Boolean(categoria) && (
           <View style={tallerStyles.campoContainer}>
             <Text style={[tallerStyles.etiqueta,{ marginBottom: 20 },]} >
               Especificaciones del trabajo
@@ -258,7 +258,9 @@ export default function PublicarTrabajoScreen() {
               <View key={uri} style={tallerStyles.fotoContenedor}>
                 <Image source={{ uri }} style={tallerStyles.foto}/>
                 <TouchableOpacity style={tallerStyles.fotoBorrar} onPress={() => setFotos((anteriores) => anteriores.filter((foto) => foto !== uri))}>
-                  <Text style={{ color: '#FF6B00', fontSize: 22 }}>✕</Text>
+                  <Text style={{ color: '#FF6B00', fontSize: 22 }}>
+                    ✕
+                  </Text>
                 </TouchableOpacity>
           </View>
             ))}

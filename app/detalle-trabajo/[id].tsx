@@ -12,6 +12,37 @@ import { supabase } from '../../services/supabase';
 import { obtenerDetalleTrabajo, Trabajo } from '../../services/trabajos';
 import { trabajosStyles as styles } from '../../styles/trabajosStyles';
 
+
+
+
+const formatearCampo = (campo: string) => {
+  return campo
+    .replace(/_/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/^./, (letra) => letra.toUpperCase());
+};
+
+const formatearValor = (valor: unknown): string => {
+  if (valor === null || valor === undefined || valor === '') {
+    return 'No especificado';
+  }
+
+  if (typeof valor === 'boolean') {
+    return valor ? 'Sí' : 'No';
+  }
+
+  if (Array.isArray(valor)) {
+    return valor.map(formatearValor).join(', ');
+  }
+
+  if (typeof valor === 'object') {
+    return JSON.stringify(valor);
+  }
+
+  return String(valor);
+};
+
+
 export default function DetalleTrabajoScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -138,19 +169,41 @@ export default function DetalleTrabajoScreen() {
         Especificaciones
       </Text>
 
-      {Object.entries(trabajo.especificaciones ?? {}).map(([campo, valor]) => (
-        <View
-          key={campo}
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginTop: 12,
-          }}
-        >
-          <Text style={{ color: '#A1A1AA' }}>{campo}</Text>
-          <Text style={{ color: '#FFFFFF' }}>{String(valor)}</Text>
-        </View>
-      ))}
+      
+      {Object.entries(trabajo.especificaciones ?? {}).map(
+        ([campo, valor]) => (
+          <View
+            key={campo}
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              marginTop: 12,
+              gap: 16,
+            }}
+          >
+            <Text
+              style={{
+                color: '#A1A1AA',
+                flex: 1,
+              }}
+            >
+              {formatearCampo(campo)}
+            </Text>
+
+            <Text
+              style={{
+                color: '#FFFFFF',
+                flex: 1,
+                textAlign: 'right',
+              }}
+            >
+              {formatearValor(valor)}
+            </Text>
+          </View>
+        )
+      )}
+
 
       <Text style={{ color: '#A1A1AA', marginTop: 30 }}>
         Publicado el {new Date(trabajo.created_at).toLocaleDateString('es-CL')}

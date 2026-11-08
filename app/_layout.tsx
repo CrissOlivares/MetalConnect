@@ -1,20 +1,18 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
+
+import ChatBot from '@/components/ChatBot'
+import { useAuth } from '@/hooks/useAuth'
 import { Stack, useRouter, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 import 'react-native-reanimated'
 
-import { useColorScheme } from '@/hooks/use-color-scheme'
-import { useAuth } from '@/hooks/useAuth'
-import ChatBot from '@/components/ChatBot'
-
 export const unstable_settings = {
   anchor: '(tabs)',
 }
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme()
+  
   const { user, loading } = useAuth()
   const router = useRouter()
   const segments = useSegments()
@@ -45,19 +43,30 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="cliente" options={{ title: 'MetalConnect' }} />
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="registro" options={{ headerShown: false }} />
-        <Stack.Screen name="taller" options={{ title: 'MetalConnect' }} />
-        <Stack.Screen name="publicar-trabajo" options={{ title: 'MetalConnect' }} />
-        <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
-        <Stack.Screen name="reset-password" options={{ headerShown: false }} />
-      </Stack>
-      <StatusBar style="auto" />
-      {user && <ChatBot />}
-    </ThemeProvider>
-  )
+  <>
+    <Stack
+      screenOptions={{
+        contentStyle: { backgroundColor: '#181818' },
+        headerStyle: { backgroundColor: '#181818' },
+        headerTintColor: '#FFFFFF',
+        headerTitleStyle: {
+        fontWeight: 'bold',
+        },
+      }}
+    >
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="cliente" options={{ title: 'MetalConnect' }} />
+      <Stack.Screen name="login" options={{ headerShown: false }} />
+      <Stack.Screen name="registro" options={{ headerShown: false }} />
+      <Stack.Screen name="taller" options={{ title: 'MetalConnect' }} />
+      <Stack.Screen name="publicar-trabajo" options={{ title: 'MetalConnect' }} />
+      <Stack.Screen name="detalle-trabajo/[id]" options={{ title: 'Detalle del trabajo' }} />
+      <Stack.Screen name="forgot-password" options={{ headerShown: false }} />
+      <Stack.Screen name="reset-password" options={{ headerShown: false }} />
+    </Stack>
+
+    <StatusBar style="light" />
+    {user && <ChatBot />}
+  </>
+)
 }
