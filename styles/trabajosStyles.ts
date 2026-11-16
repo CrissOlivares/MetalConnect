@@ -164,5 +164,138 @@ export const trabajosStyles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
+  seccionOfertasRecibidas: {
+  marginTop: 30,
+  marginBottom: 20,
+  },
+
+  tarjetaOfertaRecibida: {
+  backgroundColor: '#262626',
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: '#333333',
+  padding: 16,
+  marginTop: 12,
+  },
+
+  nombreTallerOferta: {
+  color: '#FFFFFF',
+  fontSize: 17,
+  fontWeight: 'bold',
+  marginBottom: 10,
+  },
+
+  precioOfertaRecibida: {
+  color: '#FF6B00',
+  fontSize: 22,
+  fontWeight: 'bold',
+  marginBottom: 12,
+  },
+
+  mensajeOfertaRecibida: {
+  color: '#D4D4D8',
+  fontSize: 14,
+  lineHeight: 21,
+  marginBottom: 12,
+  },
+
+  fechaOfertaRecibida: {
+  color: '#A1A1AA',
+  fontSize: 12,
+  },
+
+  botonAceptarOferta: {
+  backgroundColor: '#FF6B00',
+  borderRadius: 8,
+  paddingVertical: 14,
+  alignItems: 'center',
+  marginTop: 15,
+  },
+
+  textoAceptarOferta: {
+  color: '#FFFFFF',
+  fontSize: 15,
+  fontWeight: 'bold',
+  },
+
+  textoBotonAceptarOferta: {
+  color: '#FFFFFF',
+  fontSize: 14,
+  fontWeight: 'bold',
+  textAlign: 'center',
+  },
+
+  
+  seccionAsignados: {
+  marginTop: 30,
+  },
+
+  tituloSeccion: {
+  color: '#FFFFFF',
+  fontSize: 20,
+  fontWeight: 'bold',
+  marginBottom: 16,
+  },
+
+  estadoAsignado: {
+  color: '#4ADE80',
+  fontSize: 14,
+  fontWeight: 'bold',
+  marginTop: 10,
+  },
+
+  
+  contenedorTabs: {
+  flexDirection: 'row',
+  backgroundColor: '#262626',
+  borderRadius: 10,
+  padding: 4,
+  marginTop: 20,
+  marginBottom: 20,
+  },
+
+  tab: {
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingVertical: 12,
+  borderRadius: 8,
+  },
+
+  tabActiva: {
+  backgroundColor: '#FF6B00',
+  },
+
+  tabTexto: {
+  color: '#AAAAAA',
+  fontSize: 14,
+  fontWeight: '600',
+  },
+
+  tabTextoActivo: {
+  color: '#FFFFFF',
+  fontWeight: 'bold',
+  },
+
+  
+  botonEliminarTrabajo: {
+  backgroundColor: '#B91C1C',
+  paddingVertical: 14,
+  borderRadius: 10,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginTop: 24,
+  marginBottom: 20,
+  },
+
+  textoBotonEliminarTrabajo: {
+  color: '#FFFFFF',
+  fontSize: 15,
+  fontWeight: 'bold',
+  },
+
+
+
+
 
 });

@@ -10,7 +10,7 @@ import { clienteStyles } from '../styles/clienteStyles';
 export default function ClienteScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const [tabActiva, setTabActiva] = useState<'trabajos' | 'ofertas'>('trabajos');
+
   const [trabajos, setTrabajos] = useState<Trabajo[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
@@ -61,36 +61,9 @@ export default function ClienteScreen() {
         <Text style={clienteStyles.btnPublicarTexto}>Publicar Nuevo Trabajo</Text>
       </TouchableOpacity>
 
-      {/* Tabs */}
-      <View style={clienteStyles.contenedorTabs}>
-        <TouchableOpacity
-          style={[clienteStyles.tab, tabActiva === 'trabajos' && clienteStyles.tabActiva]}
-          onPress={() => setTabActiva('trabajos')}
-        >
-          <Ionicons
-            name="document-text-outline"
-            size={15}
-            color={tabActiva === 'trabajos' ? 'white' : ThemeColors.textoGris}
-          />
-          <Text style={[clienteStyles.tabTexto, tabActiva === 'trabajos' && clienteStyles.tabTextoActiva]}>
-            Mis Trabajos
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[clienteStyles.tab, tabActiva === 'ofertas' && clienteStyles.tabActiva]}
-          onPress={() => setTabActiva('ofertas')}
-        >
-          <Ionicons
-            name="chatbubble-outline"
-            size={15}
-            color={tabActiva === 'ofertas' ? 'white' : ThemeColors.textoGris}
-          />
-          <Text style={[clienteStyles.tabTexto, tabActiva === 'ofertas' && clienteStyles.tabTextoActiva]}>
-            Ofertas ({totalOfertas})
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <Text style={clienteStyles.tituloSeccionTrabajos}>
+        Mis trabajos
+      </Text>
 
       {/* Lista de trabajos */}
       {cargando && <ActivityIndicator color={ThemeColors.naranja} />}

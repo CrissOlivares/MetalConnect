@@ -94,3 +94,107 @@ export const enviarOferta = async ({
 
   return data;
 };
+
+
+export type OfertaRecibida = {
+  id: number;
+  trabajo_id: number;
+  taller_id: number;
+  precio: number;
+  mensaje: string;
+  created_at: string;
+  taller: {
+    nombre: string;
+  } | null;
+};
+
+export const obtenerOfertasTrabajo = async (
+  trabajoId: number
+): Promise<OfertaRecibida[]> => {
+  if (!Number.isSafeInteger(trabajoId) || trabajoId <= 0) {
+    throw new Error('El trabajo no es válido.');
+  }
+
+  const { data: authData, error: authError } =
+    await supabase.auth.getUser();
+
+  if (authError || !authData.user) {
+    throw new Error('Debes iniciar sesión para ver las ofertas.');
+  }
+
+  // Verificar que el trabajo pertenezca al usuario
+  const { data: trabajo, error: errorTrabajo } = await supabase
+    .from('trabajos')
+    .select('id')
+    .eq('id', trabajoId)
+    .eq('user_id', authData.user.id)
+    .maybeSingle();
+
+  if (errorTrabajo) throw errorTrabajo;
+
+  if (!trabajo) {
+    throw new Error('No tienes permiso para ver estas ofertas.');
+  }
+
+  // Consultar las ofertas
+  const { data: ofertas, error: errorOfertas } = await supabase
+    .from('ofertas')
+    .select('id, trabajo_id, taller_id, precio, mensaje, created_at')
+    .eq('trabajo_id', trabajoId)
+    .order('created_at', { ascending: false });
+
+  if (errorOfertas) throw errorOfertas;
+
+  if (!ofertas?.length) return [];
+
+  // Obtener los nombres de los talleres
+  const tallerIds = [...new Set(ofertas.map((o) => o.taller_id))];
+
+  const { data: talleres, error: errorTalleres } = await supabase
+    .from('talleres')
+    .select('id, nombre')
+    .in('id', tallerIds);
+
+  if (errorTalleres) throw errorTalleres;
+
+  return ofertas.map((oferta) => {
+    const taller = talleres?.find(
+      (t) => t.id === oferta.taller_id
+    );
+
+    return {
+      ...oferta,
+      taller: taller ? { nombre: taller.nombre } : null,
+    };
+  });
+};
+
+
+export const aceptarOferta = async (
+  trabajoId: number,
+  ofertaId: number
+) => {
+  if (!Number.isSafeInteger(trabajoId) || trabajoId <= 0) {
+    throw new Error('El trabajo no es válido.');
+  }
+
+  if (!Number.isSafeInteger(ofertaId) || ofertaId <= 0) {
+    throw new Error('La oferta no es válida.');
+  }
+
+  const { data: authData, error: authError } =
+    await supabase.auth.getUser();
+
+  if (authError || !authData.user) {
+    throw new Error('Debes iniciar sesión para aceptar una oferta.');
+  }
+
+  const { error } = await supabase.rpc('aceptar_oferta', {
+    p_trabajo_id: trabajoId,
+    p_oferta_id: ofertaId,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+};

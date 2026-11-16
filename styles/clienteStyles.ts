@@ -67,35 +67,6 @@ export const clienteStyles = StyleSheet.create({
     fontWeight: FontWeights.bold,
   },
 
-  // Tabs
-  contenedorTabs: {
-    flexDirection: 'row',
-    backgroundColor: ThemeColors.fondoCard,
-    borderRadius: Radius.sm,
-    padding: 4,
-    marginBottom: Spacing.md,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: Spacing.xs,
-    borderRadius: Radius.sm,
-  },
-  tabActiva: {
-    backgroundColor: ThemeColors.naranja,
-  },
-  tabTexto: {
-    fontSize: FontSizes.pequeño,
-    color: ThemeColors.textoGris,
-    fontWeight: FontWeights.normal,
-  },
-  tabTextoActiva: {
-    color: ThemeColors.textoBlanco,
-    fontWeight: FontWeights.bold,
-  },
 
   // Tarjetas de trabajo
   tarjetaTrabajo: {
@@ -167,5 +138,13 @@ export const clienteStyles = StyleSheet.create({
     color: ThemeColors.textoGris,
     textAlign: 'center',
     marginVertical: Spacing.lg,
+  },
+
+  tituloSeccionTrabajos: {
+  color: '#FFFFFF',
+  fontSize: 20,
+  fontWeight: 'bold',
+  marginTop: 28,
+  marginBottom: 16,
   },
 });
